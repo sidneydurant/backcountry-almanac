@@ -1,8 +1,8 @@
 // This component creates an interactive map using Mapbox GL JS and adds a custom WebGL layer for visualization
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import GeoTIFF, { fromUrl, fromArrayBuffer, fromBlob } from 'geotiff';
+import { fromArrayBuffer, TypedArray } from 'geotiff';
 
 // Set Mapbox API token
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -16,10 +16,7 @@ const arrayBuffer = await response.arrayBuffer();
 const tiff = await fromArrayBuffer(arrayBuffer);
 const image = await tiff.getImage();
 const rasters = await image.readRasters();
-const raster = rasters[0];
-
-// Helper functions
-const lerp = (a: number, b: number, t: number) => (1 - t) * a + t * b;
+const raster: TypedArray = rasters[0] as TypedArray;
 
 function transform(a: number, b: number, M: number[], roundToInt = false): number[] {
   const round = (v: number) => (roundToInt ? v | 0 : v);
@@ -29,35 +26,22 @@ function transform(a: number, b: number, M: number[], roundToInt = false): numbe
   ];
 }
 
-// TODO: add a debug mode, if enabled, do the console.log calls
+// TODO: add a debug mode, if enabled, do the console.log calls or provide debug info in a react sidebar component
 // TODO: add appropriate error handling for out of bounds coordinates
 // Main function to get elevation from GPS coordinates
 function getElevationFromGPS(lng: number, lat: number): number {
 
   // Get transformation matrices
   const { ModelPixelScale: s, ModelTiepoint: t } = image.fileDirectory;
-  let [sx, sy, sz] = s;
-  let [px, py, k, gx, gy, gz] = t;
+  let [sx, sy, _sz] = s;
+  let [_px, _py, _k, gx, gy, _gz] = t;
   sy = -sy; // WGS-84 tiles have a "flipped" y component
   
-  // Create transformation matrices
-  const pixelToGPS = [gx, sx, 0, gy, 0, sy];
-  // console.log(`pixel to GPS transform matrix:`, pixelToGPS);
-
   const gpsToPixel = [-gx / sx, 1 / sx, 0, -gy / sy, 0, 1 / sy];
   // console.log(`GPS to pixel transform matrix:`, gpsToPixel);
   
-  // Convert GPS to pixel coordinates
-  const [gx1, gy1, gx2, gy2] = image.getBoundingBox();
-  // console.log(`Looking up GPS coordinate (${lat.toFixed(6)},${lng.toFixed(6)})`);
-
   const [x, y] = transform(lng, lat, gpsToPixel, true);
   // console.log(`Corresponding tile pixel coordinate: [${x}][${y}]`);
-
-  // And as each pixel in the tile covers a geographic area, not a single
-  // GPS coordinate, get the area that this pixel covers:
-  const gpsBBox = [transform(x, y, pixelToGPS), transform(x + 1, y + 1, pixelToGPS)];
-  // console.log(`Pixel covers the following GPS area:`, gpsBBox);
 
   // Finally, retrieve the elevation associated with this pixel's geographic area:
   const width = rasters.width;
@@ -98,7 +82,7 @@ const Map = () => {
     
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      zoom: 12.5,
+      zoom: 12.7,
       center: LASSEN_CENTER,
       style: 'mapbox://styles/mapbox/outdoors-v12',
       antialias: true,
@@ -106,8 +90,8 @@ const Map = () => {
     });
 
     // Define a custom WebGL layer to draw colored squares
-    const squaresLayer: CustomLayer = {
-      id: 'colored-squares',
+    const elevationLayer: CustomLayer = {
+      id: 'elevation',
       type: 'custom',
       aElevation: 0,
       aPosition: 0,
@@ -118,7 +102,7 @@ const Map = () => {
 
       // onAdd is called when the layer is added to the map
       // This is where we initialize all WebGL resources
-      onAdd: function (map: mapboxgl.Map, gl: any) {
+      onAdd: function (_map: mapboxgl.Map, gl: any) {
         // Vertex shader: Computes color from elevation
         const vertexSource = `
           attribute vec4 a_position;
@@ -242,8 +226,6 @@ const Map = () => {
               x2, y1   // top-right
             );
             
-            // TODO: add some optimization (we currently do quite a bit of duplicated computation)
-
             // Add colors for each vertex (same color for all vertices in a square)
             // TODO: consider adding different colors for each corner of the vertex (this should be precomputed once)
             // TODO: move computation into fragment shader instead of doing the elevation > color computation in JS
@@ -309,7 +291,7 @@ const Map = () => {
 
     // Add our custom layer when the map loads
     map.on('load', () => {
-      map.addLayer(squaresLayer, 'building');
+      map.addLayer(elevationLayer, 'building');
     });
 
     // Cleanup function to remove the map when component unmounts
