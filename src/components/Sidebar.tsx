@@ -1,8 +1,8 @@
 // This component is a sidebar that lets you change settings for the map display
 import React from 'react';
 
-// TODO: split sidebar into various components. Add a legend when any particular option is selected
-// TODO: figure out how best to do this
+// TODO: split sidebar into various components. Add a legend with units when any particular option is selected
+// TODO: figure out how best to do this. Add an infobubble.
 const Sidebar = () => {
     return <div id="sidebar"className="fixed left-0 top-0 w-1/4 bg-white z-50 m-4 rounded-lg drop-shadow-xl">
         <div className="p-8">
@@ -22,7 +22,7 @@ const Sidebar = () => {
                 </div>
                 <div className="flex items-center justify-left">
                     <input type="radio" name="layer" className="w-4 h-4" />
-                    <label className="text-sm font-medium pl-4">Solar Insolation</label>
+                    <label className="text-sm font-medium pl-4">Insolation</label>
                 </div>
             </div>
         </div>
