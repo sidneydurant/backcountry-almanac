@@ -10,10 +10,6 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 // Default center coordinates for the map view (Lassen Volcanic National Park)
 const LASSEN_CENTER: [number, number] = [-121.53, 40.46];
 
-
-// TODO: convert to consistent lng, lat format (despite wsg-84, it seems that webgl and mapbox use lng, lat, so let's stick with that)
-
-
 // TODO: split into util that precomputes what can be precomputed, and add error handling for out of bounds.
 const response = await fetch('./src/assets/lassen-cropped-dem-data.tif');
 const arrayBuffer = await response.arrayBuffer();
@@ -33,10 +29,10 @@ function transform(a: number, b: number, M: number[], roundToInt = false): numbe
   ];
 }
 
-console.log(`Lassen Peak elevation = ${getElevationFromGPS(LASSEN_CENTER[1], LASSEN_CENTER[0])}`)
-
+// TODO: add a debug mode, if enabled, do the console.log calls
+// TODO: add appropriate error handling for out of bounds coordinates
 // Main function to get elevation from GPS coordinates
-function getElevationFromGPS(lat: number, lng: number): number {
+function getElevationFromGPS(lng: number, lat: number): number {
 
   // Get transformation matrices
   const { ModelPixelScale: s, ModelTiepoint: t } = image.fileDirectory;
@@ -46,117 +42,41 @@ function getElevationFromGPS(lat: number, lng: number): number {
   
   // Create transformation matrices
   const pixelToGPS = [gx, sx, 0, gy, 0, sy];
-  console.log(`pixel to GPS transform matrix:`, pixelToGPS);
+  // console.log(`pixel to GPS transform matrix:`, pixelToGPS);
 
   const gpsToPixel = [-gx / sx, 1 / sx, 0, -gy / sy, 0, 1 / sy];
-  console.log(`GPS to pixel transform matrix:`, gpsToPixel);
+  // console.log(`GPS to pixel transform matrix:`, gpsToPixel);
   
   // Convert GPS to pixel coordinates
   const [gx1, gy1, gx2, gy2] = image.getBoundingBox();
-  console.log(`Looking up GPS coordinate (${lat.toFixed(6)},${lng.toFixed(6)})`);
+  // console.log(`Looking up GPS coordinate (${lat.toFixed(6)},${lng.toFixed(6)})`);
 
   const [x, y] = transform(lng, lat, gpsToPixel, true);
-  console.log(`Corresponding tile pixel coordinate: [${x}][${y}]`);
+  // console.log(`Corresponding tile pixel coordinate: [${x}][${y}]`);
 
   // And as each pixel in the tile covers a geographic area, not a single
   // GPS coordinate, get the area that this pixel covers:
   const gpsBBox = [transform(x, y, pixelToGPS), transform(x + 1, y + 1, pixelToGPS)];
-  console.log(`Pixel covers the following GPS area:`, gpsBBox);
+  // console.log(`Pixel covers the following GPS area:`, gpsBBox);
 
   // Finally, retrieve the elevation associated with this pixel's geographic area:
-  // const rasters = await image.readRasters();
-  // const { width, [0]: raster } = rasters;
   const width = rasters.width;
-  // const elevation:number = raster[x][y];
   const index = x + y * width;
-  console.log(`Corresponding raster index: ${index}`)
+  // console.log(`Corresponding raster index: ${index}`)
   const elevation: number = raster[index];
-  console.log(`The elevation at (${lat.toFixed(6)},${lng.toFixed(6)}) is ${elevation}m`);
+  // console.log(`The elevation at (${lat.toFixed(6)},${lng.toFixed(6)}) is ${elevation}m`);
   return elevation;
 }
 
-
-
-
-/**
- * Convert elevation value to a rainbow color in WebGL RGBA format
- * @param {number} elevation - The elevation value
- * @param {number} minElevation - Minimum elevation in dataset (defaults to 0)
- * @param {number} scale - how often (in meters) the pattern repeats
- * @param {number} alpha - Alpha/opacity value (defaults to 1.0)
- * @returns {number[]} - Color as [r, g, b, a] with values between 0.0 and 1.0
- */
-function elevationToWebGLRainbow(elevation: number, scale: number = 1000, alpha: number = 1.0): number[] {
-  // Normalize elevation to a value between 0 and 1
-  const normalized = (elevation / scale)%1;
-  
-  // Use the normalized value to determine position in the rainbow
-  // We'll create a smooth gradient across the rainbow spectrum
-  let r, g, b;
-  
-  // Red to Yellow to Green to Cyan to Blue to Magenta
-  const hue = normalized * 5.0;
-  const i = Math.floor(hue);
-  const f = hue - i;
-  
-  // Set RGB based on the section of the rainbow
-  switch (i % 6) {
-    case 0: // Red to Yellow
-      r = 1.0;
-      g = f;
-      b = 0.0;
-      break;
-    case 1: // Yellow to Green
-      r = 1.0 - f;
-      g = 1.0;
-      b = 0.0;
-      break;
-    case 2: // Green to Cyan
-      r = 0.0;
-      g = 1.0;
-      b = f;
-      break;
-    case 3: // Cyan to Blue
-      r = 0.0;
-      g = 1.0 - f;
-      b = 1.0;
-      break;
-    case 4: // Blue to Magenta
-      r = f;
-      g = 0.0;
-      b = 1.0;
-      break;
-    case 5: // Magenta to Red
-      r = 1.0;
-      g = 0.0;
-      b = 1.0 - f;
-      break;
-  }
-  
-  return [r, g, b, alpha];
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 interface CustomLayer {
-  aColor?: number;
-  aPos?: number;
+  aElevation: number;
+  aPosition: number;
+  vertexCount: number;
   id: string;
   type: 'custom';
-  program?: WebGLProgram;// Holds compiled and linked shader program
-  posBuffer?: WebGLBuffer; // Stores vertex data for the triangle
-  colorBuffer?: WebGLBuffer; // Stores color data for the triangle
+  program: WebGLProgram | null;// Holds compiled and linked shader program
+  posBuffer: WebGLBuffer | null; // Stores vertex data for each triangle
+  elevationBuffer: WebGLBuffer | null; // Stores elevation data for each vertex
   onAdd: (map: mapboxgl.Map, gl: WebGLRenderingContext) => void;
   render: (gl: WebGLRenderingContext, matrix: number[]) => void;
 }
@@ -178,7 +98,7 @@ const Map = () => {
     
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      zoom: 12,
+      zoom: 12.5,
       center: LASSEN_CENTER,
       style: 'mapbox://styles/mapbox/outdoors-v12',
       antialias: true,
@@ -189,31 +109,66 @@ const Map = () => {
     const squaresLayer: CustomLayer = {
       id: 'colored-squares',
       type: 'custom',
-      aColor: 0,
+      aElevation: 0,
+      aPosition: 0,
+      vertexCount: 0,
+      program: null,
+      posBuffer: null,
+      elevationBuffer: null,
 
       // onAdd is called when the layer is added to the map
       // This is where we initialize all WebGL resources
       onAdd: function (map: mapboxgl.Map, gl: any) {
-        // Vertex shader: Transforms vertex positions using a matrix
-        // Now also receiving a color attribute that will be passed to the fragment shader
+        // Vertex shader: Computes color from elevation
         const vertexSource = `
-          uniform mat4 u_matrix;
-          attribute vec2 a_pos;
-          attribute vec4 a_color;
+          attribute vec4 a_position;
+          attribute float a_elevation;
+
           varying vec4 v_color;
-          
+
+          uniform mat4 u_matrix;
+
           void main() {
-              gl_Position = u_matrix * vec4(a_pos, 0.0, 1.0);
-              v_color = a_color;
+            // Normalize elevation to a value between 0 and 1
+            float normalized = mod(a_elevation / 1250.0, 1.0);
+            
+            // Initialize RGB components
+            vec3 color;
+            
+            // Calculate rainbow pattern
+            float hue = normalized * 5.0;
+            float i = floor(hue);
+            float f = hue - i;
+            
+            // Set RGB based on the section of the rainbow
+            if (i < 1.0) { // Red to Yellow
+                color = vec3(1.0, f, 0.0);
+            } else if (i < 2.0) { // Yellow to Green
+                color = vec3(1.0 - f, 1.0, 0.0);
+            } else if (i < 3.0) { // Green to Cyan
+                color = vec3(0.0, 1.0, f);
+            } else if (i < 4.0) { // Cyan to Blue
+                color = vec3(0.0, 1.0 - f, 1.0);
+            } else if (i < 5.0) { // Blue to Magenta
+                color = vec3(f, 0.0, 1.0);
+            } else { // Magenta to Red
+                color = vec3(1.0, 0.0, 1.0 - f);
+            }
+            
+            // Pass the computed color to the fragment shader
+            v_color = vec4(color, 0.3);
+            
+            // Set the position
+            gl_Position = u_matrix * a_position;
           }`;
 
-        // Fragment shader: Uses the interpolated color from the vertex shader
+        // Fragment shader: interpolates the color from the vertex shader
         const fragmentSource = `
           precision mediump float;
           varying vec4 v_color;
           
           void main() {
-              gl_FragColor = v_color;
+            gl_FragColor = v_color;
           }`;
 
         // Create and compile the vertex shader
@@ -228,71 +183,78 @@ const Map = () => {
 
         // Create and link shader program
         this.program = gl.createProgram();
+
         gl.attachShader(this.program, vertexShader);
         gl.attachShader(this.program, fragmentShader);
         gl.linkProgram(this.program);
 
-        // Get the location of the vertex position and color attributes
-        this.aPos = gl.getAttribLocation(this.program, 'a_pos');
-        this.aColor = gl.getAttribLocation(this.program, 'a_color');
+        // Check program linking
+        if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
+          console.error('Shader program linking error:', gl.getProgramInfoLog(this.program));
+          return;
+        }
+        
+        // If we get here, everything compiled and linked successfully
+        console.log('Shaders compiled and linked successfully!');
 
-        // Define square locations (center points)
-        const squares = [
-          { lng: -121.505, lat: 40.4881},    // Lassen Peak
-          { lng: -121.510, lat: 40.4881},    // Lassen Peak
-          { lng: -121.515, lat: 40.4881},    // Lassen Peak
-          { lng: -121.520, lat: 40.4881},    // Lassen Peak
-          { lng: -121.525, lat: 40.4881},    // Lassen Peak
-          { lng: -121.559585, lat: 40.445564}, // Brokeoff Mountain
-          { lng: -121.52414, lat: 40.44954},   // Diamond Peak
-          { lng: -121.450, lat: 40.430},
-          { lng: -121.600, lat: 40.500}
-        ];
+        // Get the location of the vertex position and elevation attributes
+        this.aPosition = gl.getAttribLocation(this.program, 'a_position');
+        this.aElevation = gl.getAttribLocation(this.program, 'a_elevation');
+        // Log attribute locations to verify
+        console.log('a_position location:', this.aPosition);
+        console.log('a_elevation location:', this.aElevation);
 
-        //const boundingBox = [{ lng: -121.450, lat: 40.400}, { lng: -121.600, lat: 40.500}];
+        // TODO: make this configurable
+        const boundingBox = [{ lng: -121.61, lat: 40.42}, { lng: -121.45, lat: 40.50}];
 
-        // TODO: dynamically generate squares for the area of the map?
-        // actually, instead I should directly create the mesh while iterating over lats and longs, instead of 
-
-        // Size of each square in Mercator coordinate units
-        const squareSize = 0.000007;
+        const squareSizeMercator = 0.00000175; // TODO: stretch vertically to account for latitude
+        const squareSizeGPS = 0.00125;
 
         // Arrays to store vertices and colors
         const vertices: number[] = [];
-        const colors: number[] = [];
+        const elevations: number[] = [];
 
         // Generate vertices and colors for each square
-        squares.forEach((square) => {
-          // Convert center point to Mercator coordinates
-          const center = mapboxgl.MercatorCoordinate.fromLngLat({lng: square.lng, lat: square.lat});
-          
-          // Calculate corner points for the square
-          const x1 = center.x - squareSize;
-          const y1 = center.y - squareSize;
-          const x2 = center.x + squareSize;
-          const y2 = center.y + squareSize;
-          
-          // Each square consists of two triangles (6 vertices total)
-          // First triangle: top-left, bottom-left, bottom-right
-          vertices.push(
-            x1, y1,  // top-left
-            x1, y2,  // bottom-left
-            x2, y2   // bottom-right
-          );
-          
-          // Second triangle: top-left, bottom-right, top-right
-          vertices.push(
-            x1, y1,  // top-left
-            x2, y2,  // bottom-right
-            x2, y1   // top-right
-          );
-          
-          // Add colors for each vertex (same color for all vertices in a square)
-          const color = elevationToWebGLRainbow(getElevationFromGPS(square.lat, square.lng), 3000, 0.3);
-          for (let i = 0; i < 6; i++) {  // 6 vertices per square (2 triangles)
-            colors.push(...color);
+        for (let lng = boundingBox[0].lng; lng <= boundingBox[1].lng; lng += squareSizeGPS) {
+          for (let lat = boundingBox[0].lat; lat <= boundingBox[1].lat; lat += squareSizeGPS) {
+            // TODO: split into helper function
+            // Convert center point to Mercator coordinates
+            const center = mapboxgl.MercatorCoordinate.fromLngLat({lng: lng, lat: lat});
+            
+            // Calculate corner points for the square
+            const x1 = center.x - squareSizeMercator;
+            const y1 = center.y - squareSizeMercator;
+            const x2 = center.x + squareSizeMercator;
+            const y2 = center.y + squareSizeMercator;
+            
+            // Each square consists of two triangles (6 vertices total)
+            // First triangle: top-left, bottom-left, bottom-right
+            vertices.push(
+              x1, y1,  // top-left
+              x1, y2,  // bottom-left
+              x2, y2   // bottom-right
+            );
+            
+            // Second triangle: top-left, bottom-right, top-right
+            vertices.push(
+              x1, y1,  // top-left
+              x2, y2,  // bottom-right
+              x2, y1   // top-right
+            );
+            
+            // TODO: add some optimization (we currently do quite a bit of duplicated computation)
+
+            // Add colors for each vertex (same color for all vertices in a square)
+            // TODO: consider adding different colors for each corner of the vertex (this should be precomputed once)
+            // TODO: move computation into fragment shader instead of doing the elevation > color computation in JS
+            // (although currently it's kind of fine because this is a one time computation, only done on initial load)
+            const elevation = getElevationFromGPS(lng, lat);
+            for (let i = 0; i < 6; i++) {  // 6 vertices per square (2 triangles)
+              elevations.push(elevation);
+            }
+
           }
-        });
+        }
 
         // Create and bind position buffer
         this.posBuffer = gl.createBuffer();
@@ -300,9 +262,9 @@ const Map = () => {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
         
         // Create and bind color buffer
-        this.colorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+        this.elevationBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.elevationBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(elevations), gl.STATIC_DRAW);
         
         // Store the number of vertices
         this.vertexCount = vertices.length / 2;
@@ -310,6 +272,12 @@ const Map = () => {
 
       // render is called on every frame when the map needs to be redrawn
       render: function (gl, matrix) {
+
+        if (!this.program) {
+          console.error('Program not initialized');
+          return;
+        }
+
         // Activate our shader program
         gl.useProgram(this.program);
         
@@ -321,14 +289,14 @@ const Map = () => {
         );
         
         // Bind position buffer and set up vertex attribute
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
-        gl.enableVertexAttribArray(this.aPos);
-        gl.vertexAttribPointer(this.aPos, 2, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer?? null);
+        gl.enableVertexAttribArray(this.aPosition);
+        gl.vertexAttribPointer(this.aPosition, 2, gl.FLOAT, false, 0, 0);
         
-        // Bind color buffer and set up color attribute
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
-        gl.enableVertexAttribArray(this.aColor);
-        gl.vertexAttribPointer(this.aColor, 4, gl.FLOAT, false, 0, 0);
+        // Bind elevation buffer and set up elevation attribute
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.elevationBuffer ?? null);
+        gl.enableVertexAttribArray(this.aElevation);
+        gl.vertexAttribPointer(this.aElevation, 1, gl.FLOAT, false, 0, 0);
         
         // Enable transparency blending
         gl.enable(gl.BLEND);
