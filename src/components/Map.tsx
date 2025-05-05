@@ -2,7 +2,7 @@
 import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { fromArrayBuffer, TypedArray } from 'geotiff';
+import { ElevationDataProvider } from '../modules/elevationDataProvider';
 
 // Set Mapbox API token
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -10,47 +10,8 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 // Default center coordinates for the map view (Lassen Volcanic National Park)
 const LASSEN_CENTER: [number, number] = [-121.53, 40.46];
 
-// TODO: split into util that precomputes what can be precomputed, and add error handling for out of bounds.
-const response = await fetch('./src/assets/lassen-cropped-dem-data.tif');
-const arrayBuffer = await response.arrayBuffer();
-const tiff = await fromArrayBuffer(arrayBuffer);
-const image = await tiff.getImage();
-const rasters = await image.readRasters();
-const raster: TypedArray = rasters[0] as TypedArray;
-
-function transform(a: number, b: number, M: number[], roundToInt = false): number[] {
-  const round = (v: number) => (roundToInt ? v | 0 : v);
-  return [
-    round(M[0] + M[1] * a + M[2] * b),
-    round(M[3] + M[4] * a + M[5] * b),
-  ];
-}
-
-// TODO: add a debug mode, if enabled, do the console.log calls or provide debug info in a react sidebar component
-// TODO: add appropriate error handling for out of bounds coordinates
-// Main function to get elevation from GPS coordinates
-function getElevationFromGPS(lng: number, lat: number): number {
-
-  // Get transformation matrices
-  const { ModelPixelScale: s, ModelTiepoint: t } = image.fileDirectory;
-  let [sx, sy, _sz] = s;
-  let [_px, _py, _k, gx, gy, _gz] = t;
-  sy = -sy; // WGS-84 tiles have a "flipped" y component
-  
-  const gpsToPixel = [-gx / sx, 1 / sx, 0, -gy / sy, 0, 1 / sy];
-  // console.log(`GPS to pixel transform matrix:`, gpsToPixel);
-  
-  const [x, y] = transform(lng, lat, gpsToPixel, true);
-  // console.log(`Corresponding tile pixel coordinate: [${x}][${y}]`);
-
-  // Finally, retrieve the elevation associated with this pixel's geographic area:
-  const width = rasters.width;
-  const index = x + y * width;
-  // console.log(`Corresponding raster index: ${index}`)
-  const elevation: number = raster[index];
-  // console.log(`The elevation at (${lat.toFixed(6)},${lng.toFixed(6)}) is ${elevation}m`);
-  return elevation;
-}
+const elevationDataProvider = new ElevationDataProvider();
+elevationDataProvider.initialize('./src/assets/lassen-cropped-dem-data.tif');
 
 interface CustomLayer {
   aElevation: number;
@@ -64,13 +25,6 @@ interface CustomLayer {
   onAdd: (map: mapboxgl.Map, gl: WebGLRenderingContext) => void;
   render: (gl: WebGLRenderingContext, matrix: number[]) => void;
 }
-
-// TODO: next step is to make the color based on elevation pulled from DEM data!
-// TODO: load DEM data, and then be able to convert coordinates to an elevation
-// TODO: convert elevation to a color
-
-// then systematically go over a grid of points, and for each point, find the elevation, 
-// and then convert that to a color and render the squares
 
 const Map = () => {
   // React refs to store references to the map container DOM element and the mapbox instance
@@ -230,7 +184,7 @@ const Map = () => {
             // TODO: consider adding different colors for each corner of the vertex (this should be precomputed once)
             // TODO: move computation into fragment shader instead of doing the elevation > color computation in JS
             // (although currently it's kind of fine because this is a one time computation, only done on initial load)
-            const elevation = getElevationFromGPS(lng, lat);
+            const elevation = elevationDataProvider.getElevationFromGPS(lng, lat);
             for (let i = 0; i < 6; i++) {  // 6 vertices per square (2 triangles)
               elevations.push(elevation);
             }
