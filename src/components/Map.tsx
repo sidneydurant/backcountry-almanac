@@ -11,11 +11,11 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 const LASSEN_CENTER: [number, number] = [-121.53, 40.46];
 
 
-// TODO: convert to consistent lat, lng format
+// TODO: convert to consistent lng, lat format (despite wsg-84, it seems that webgl and mapbox use lng, lat, so let's stick with that)
 
 
 // TODO: split into util that precomputes what can be precomputed, and add error handling for out of bounds.
-const response = await fetch('./assets/lassen-cropped-dem-data.tif');
+const response = await fetch('./src/assets/lassen-cropped-dem-data.tif');
 const arrayBuffer = await response.arrayBuffer();
 const tiff = await fromArrayBuffer(arrayBuffer);
 const image = await tiff.getImage();
@@ -245,7 +245,11 @@ const Map = () => {
           { lng: -121.525, lat: 40.4881},    // Lassen Peak
           { lng: -121.559585, lat: 40.445564}, // Brokeoff Mountain
           { lng: -121.52414, lat: 40.44954},   // Diamond Peak
+          { lng: -121.450, lat: 40.430},
+          { lng: -121.600, lat: 40.500}
         ];
+
+        //const boundingBox = [{ lng: -121.450, lat: 40.400}, { lng: -121.600, lat: 40.500}];
 
         // TODO: dynamically generate squares for the area of the map?
         // actually, instead I should directly create the mesh while iterating over lats and longs, instead of 
