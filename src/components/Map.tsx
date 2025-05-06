@@ -3,6 +3,8 @@ import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { ElevationDataProvider } from '../modules/elevationDataProvider';
+import elevationVertexShaderSource from '../shaders/elevation.vert.glsl?raw'; // ?raw tells Vite to load the file as a string
+import defaultFragmentShaderSource from '../shaders/default.frag.glsl?raw';
 
 // Set Mapbox API token
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -57,66 +59,15 @@ const Map = () => {
       // onAdd is called when the layer is added to the map
       // This is where we initialize all WebGL resources
       onAdd: function (_map: mapboxgl.Map, gl: any) {
-        // Vertex shader: Computes color from elevation
-        const vertexSource = `
-          attribute vec4 a_position;
-          attribute float a_elevation;
-
-          varying vec4 v_color;
-
-          uniform mat4 u_matrix;
-
-          void main() {
-            // Normalize elevation to a value between 0 and 1
-            float normalized = mod(a_elevation / 1250.0, 1.0);
-            
-            // Initialize RGB components
-            vec3 color;
-            
-            // Calculate rainbow pattern
-            float hue = normalized * 5.0;
-            float i = floor(hue);
-            float f = hue - i;
-            
-            // Set RGB based on the section of the rainbow
-            if (i < 1.0) { // Red to Yellow
-                color = vec3(1.0, f, 0.0);
-            } else if (i < 2.0) { // Yellow to Green
-                color = vec3(1.0 - f, 1.0, 0.0);
-            } else if (i < 3.0) { // Green to Cyan
-                color = vec3(0.0, 1.0, f);
-            } else if (i < 4.0) { // Cyan to Blue
-                color = vec3(0.0, 1.0 - f, 1.0);
-            } else if (i < 5.0) { // Blue to Magenta
-                color = vec3(f, 0.0, 1.0);
-            } else { // Magenta to Red
-                color = vec3(1.0, 0.0, 1.0 - f);
-            }
-            
-            // Pass the computed color to the fragment shader
-            v_color = vec4(color, 0.3);
-            
-            // Set the position
-            gl_Position = u_matrix * a_position;
-          }`;
-
-        // Fragment shader: interpolates the color from the vertex shader
-        const fragmentSource = `
-          precision mediump float;
-          varying vec4 v_color;
-          
-          void main() {
-            gl_FragColor = v_color;
-          }`;
 
         // Create and compile the vertex shader
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-        gl.shaderSource(vertexShader, vertexSource);
+        gl.shaderSource(vertexShader, elevationVertexShaderSource);
         gl.compileShader(vertexShader);
 
         // Create and compile the fragment shader
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fragmentShader, fragmentSource);
+        gl.shaderSource(fragmentShader, defaultFragmentShaderSource);
         gl.compileShader(fragmentShader);
 
         // Create and link shader program
