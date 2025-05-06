@@ -2,9 +2,17 @@
 
 This is a (Vite/React)web app that uses Mapbox GL JS to create an interactive map of an area with custom WebGL layers for visualization. It uses DEM data (downloaded from https://apps.nationalmap.gov/downloader/) of a small area around Lassen National Park. The raw data is parsed using https://github.com/geotiffjs/geotiff.js/. This elevation data is then piped into custom WebGL shaders that form the basis of each visualization layer.
 
-![A map of Lassen National Park, with a custom elevation layer rendered on top.](readme-lassen-elevation.png)
+Here is the map showing an elevation visualization:
 
-Here is the map showing an elevation visualization. Note that due to the difference between the Mercator projection used by Mapbox and the UTM projection used by the DEM data, the grid is stretched vertically. I plan to fix this when I make the grid size dynamic.
+![A map of Lassen National Park, with a custom elevation layer rendered on top.](./img/elevation-screenshot.png)
+
+Here is the map showing an aspect visualization:
+
+![A map of Lassen National Park, with a custom aspect layer rendered on top.](./img/aspect-screenshot.png)
+
+Here is the map showing a slope angle visualization:
+
+![A map of Lassen National Park, with a custom slope angle layer rendered on top.](./img/slopeangle-screenshot.png)
 
 The goal is to be able to show information about current conditions to help estimate when a refrozen slope may soften and offer good skiing, or even when a slope covered in powder can be expected to warm up and start avalanching. Specifically the goal is to create layers that display Solar Exposure (boolean), Solar Irradiance (W/m<sup>2</sup>), and Insolation (Wh/m<sup>2</sup>).
 
