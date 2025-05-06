@@ -3,6 +3,7 @@
 // TODO: split sidebar into various components. Add a legend with units when any particular option is selected
 // TODO: figure out how best to do this. Add an infobubble.
 const Sidebar = () => {
+    return;
     return <div id="sidebar"className="fixed left-0 top-0 w-1/4 bg-white z-50 m-4 rounded-lg drop-shadow-xl">
         <div className="p-8">
             <h2 className="text-lg font-semibold mb-4">Map Settings</h2>
