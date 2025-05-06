@@ -1,6 +1,6 @@
 # Backcountry Almanac
 
-This is a React app that uses Mapbox GL JS to create an interactive map of an area with custom WebGL layers for visualization. It uses DEM data (downloaded from https://apps.nationalmap.gov/downloader/) of a small area around Lassen National Park. The raw data is parsed using https://github.com/geotiffjs/geotiff.js/. This elevation data is then piped into custom WebGL shaders that form the basis of each visualization layer.
+This is a (Vite/React)web app that uses Mapbox GL JS to create an interactive map of an area with custom WebGL layers for visualization. It uses DEM data (downloaded from https://apps.nationalmap.gov/downloader/) of a small area around Lassen National Park. The raw data is parsed using https://github.com/geotiffjs/geotiff.js/. This elevation data is then piped into custom WebGL shaders that form the basis of each visualization layer.
 
 ![A map of Lassen National Park, with a custom elevation layer rendered on top.](readme-lassen-elevation.png)
 
