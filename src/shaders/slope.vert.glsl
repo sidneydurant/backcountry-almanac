@@ -11,8 +11,8 @@ uniform float u_grid_spacing; // Distance between vertices in the grid
 
 void main() {
     // Calculate the slope using finite differences
-    float slope_x = ((a_elevation_nx - a_elevation) / 20.0);
-    float slope_z = ((a_elevation_nz - a_elevation) / 20.0);
+    float slope_x = ((a_elevation_nx - a_elevation) / 13.0);
+    float slope_z = ((a_elevation_nz - a_elevation) / 13.0);
     
     // Construct the normal vector (-slope_x, 1, -slope_z) and normalize it
     vec3 normal = normalize(vec3(-slope_x, 1.0, -slope_z));

@@ -1,13 +1,16 @@
 import Map from './components/Map'
 import Sidebar from './components/Sidebar'
 import './App.css'
+import { VisualizationProvider } from './components/VisualizationContext'
 
 function App() {
 
     return (
         <main className="h-full w-full">
-            <Sidebar/>
-            <Map/>
+            <VisualizationProvider>
+                <Sidebar/>
+                <Map/>
+            </VisualizationProvider>
         </main>
     )
 }
