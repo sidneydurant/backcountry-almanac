@@ -12,7 +12,7 @@ function App() {
                 <Map/>
             </VisualizationProvider>
         </main>
-    )
+    );
 }
 
 export default App

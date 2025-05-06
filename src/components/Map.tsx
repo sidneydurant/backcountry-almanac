@@ -73,7 +73,9 @@ const Map = () => {
     };
 
     // Render a div container for the map
-    return <div className="h-full w-full" ref={mapContainerRef} id="map"></div>;
+    return (
+        <div className="h-full w-full" ref={mapContainerRef} id="map"></div>
+    );
 };
 
 export default Map;
