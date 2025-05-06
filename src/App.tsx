@@ -4,12 +4,12 @@ import './App.css'
 
 function App() {
 
-  return (
-    <main className="h-full w-full">
-      <Sidebar/>
-      <Map/>
-    </main>
-  )
+    return (
+        <main className="h-full w-full">
+            <Sidebar/>
+            <Map/>
+        </main>
+    )
 }
 
 export default App
