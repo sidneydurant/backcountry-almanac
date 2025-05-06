@@ -1,21 +1,21 @@
 # Backcountry Almanac
 
-This is a (Vite/React)web app that uses Mapbox GL JS to create an interactive map of an area with custom WebGL layers for visualization. It uses DEM data (downloaded from https://apps.nationalmap.gov/downloader/) of a small area around Lassen National Park. The raw data is parsed using https://github.com/geotiffjs/geotiff.js/. This elevation data is then piped into custom WebGL shaders that form the basis of each visualization layer.
+This is a (Vite/React) web app that uses Mapbox GL JS to create an interactive map of an area with custom layers for visualization. It uses DEM data of a small area around Lassen National Park downloaded from https://apps.nationalmap.gov/downloader/. This raw elevation data is parsed using https://github.com/geotiffjs/geotiff.js/, and then piped into custom WebGL shaders that form the basis of each layer.
 
-Here is the map showing an elevation visualization:
+Here is the map showing the elevation layer:
 
 ![A map of Lassen National Park, with a custom elevation layer rendered on top.](./img/elevation-screenshot.png)
 
-Here is the map showing an aspect visualization:
+Here is the map showing the aspect layer:
 
 ![A map of Lassen National Park, with a custom aspect layer rendered on top.](./img/aspect-screenshot.png)
 
-Here is the map showing a slope angle visualization:
+Here is the map showing the slope angle layer:
 
 ![A map of Lassen National Park, with a custom slope angle layer rendered on top.](./img/slopeangle-screenshot.png)
 
-The goal is to be able to show information about current conditions to help estimate when a refrozen slope may soften and offer good skiing, or even when a slope covered in powder can be expected to warm up and start avalanching. Specifically the goal is to create layers that display Solar Exposure (boolean), Solar Irradiance (W/m<sup>2</sup>), and Insolation (Wh/m<sup>2</sup>).
+The eventual goal is to show information about current conditions by creating layers that display Solar Exposure (boolean), Solar Irradiance (W/m<sup>2</sup>), and Insolation (Wh/m<sup>2</sup>) for a user-specified time. Solar Exposure is tricky because one needs to take into account shadows cast by surrounding terrain. Solar Irradiance and Insolation are dependent on this as well. These layers could be used to estimate when a refrozen slope may soften and offer good skiing, or when a slope covered in powder can be expected to warm up and start avalanching.
 
-Longer term, integrating weather data could be interesting as well (ex to help account for the wind/cloud cover/temperature's impact on the snowpack), but for now I'm assuming clear skies (and thus 100% solar irradiance).
+Longer term, integrating weather data could be interesting as well, to help account for the wind, cloud cover & temperature's impact on the snowpack.
 
 At the end of the day, this is a for-fun personal project :)
