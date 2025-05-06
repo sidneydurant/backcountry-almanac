@@ -1,10 +1,10 @@
 import mapboxgl from 'mapbox-gl';
-import elevationVertexShaderSource from '../shaders/slopeangle.vert.glsl?raw'; // ?raw tells Vite to load the file as a string
+import elevationVertexShaderSource from '../shaders/elevation.vert.glsl?raw'; // ?raw tells Vite to load the file as a string
 import defaultFragmentShaderSource from '../shaders/default.frag.glsl?raw';
 import { ElevationDataProvider } from '../modules/elevationDataProvider';
 
 const elevationDataProvider = new ElevationDataProvider();
-elevationDataProvider.initialize('./src/assets/lassen-cropped-dem-data.tif');
+elevationDataProvider.initialize('./src/assets/lassen-cropped-dem-data.tif'); // TODO: add error handling
 
 interface CustomLayer {
     aElevation: number;
@@ -94,8 +94,6 @@ export const visualizationLayer: CustomLayer = {
         console.log('a_position location:', this.aPosition);
         console.log('a_elevation location:', this.aElevation);
 
-
-
         //claudetodo: Get the location of the new neighbor elevation attributes
         this.aElevationNX = gl.getAttribLocation(this.program, 'a_elevation_nx');
         this.aElevationNZ = gl.getAttribLocation(this.program, 'a_elevation_nz');
@@ -134,7 +132,7 @@ export const visualizationLayer: CustomLayer = {
         for (let lng = boundingBox[0].lng; lng <= boundingBox[1].lng; lng += cellSizeGPS) {
             let yIndex = 0;
             for (let lat = boundingBox[0].lat; lat <= boundingBox[1].lat; lat += cellSizeGPS) {
-                elevationGrid[xIndex][yIndex] = elevationDataProvider.getElevationFromGPSInterpolated(lng, lat);
+                elevationGrid[xIndex][yIndex] = elevationDataProvider.getElevation(lng, lat);
                 yIndex++;
             }
             xIndex++;
