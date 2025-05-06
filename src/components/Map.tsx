@@ -20,7 +20,7 @@ const Map = () => {
         
         const map = new mapboxgl.Map({
             container: mapContainerRef.current,
-            zoom: 12.5,
+            zoom: 12,
             center: LASSEN_CENTER,
             style: 'mapbox://styles/mapbox/outdoors-v12',
             antialias: true,

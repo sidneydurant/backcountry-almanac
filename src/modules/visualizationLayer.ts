@@ -1,5 +1,5 @@
 import mapboxgl from 'mapbox-gl';
-import elevationVertexShaderSource from '../shaders/aspect.vert.glsl?raw'; // ?raw tells Vite to load the file as a string
+import elevationVertexShaderSource from '../shaders/slopeangle.vert.glsl?raw'; // ?raw tells Vite to load the file as a string
 import defaultFragmentShaderSource from '../shaders/default.frag.glsl?raw';
 import { ElevationDataProvider } from '../modules/elevationDataProvider';
 
