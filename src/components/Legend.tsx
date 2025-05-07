@@ -1,4 +1,4 @@
-// This component is a legend for the currently selected layer
+// The legend for the currently selected layer
 import { VisualizationContext } from './VisualizationContext';
 import { useContext } from 'react';
 

@@ -37,7 +37,7 @@ void main() {
     }
 
     // Pass the computed color to the fragment shader
-    v_color = vec4(color, 0.3);
+    v_color = vec4(color, 0.2);
 
     // Set the position
     gl_Position = u_matrix * a_position;
