@@ -2,7 +2,7 @@
 
 This is a (Vite/React) web app that uses Mapbox GL JS to create an interactive map of an area with custom layers for visualization. It uses DEM data of a small area around Lassen National Park downloaded from [the USGS](https://apps.nationalmap.gov/downloader/). This raw elevation data is parsed using [geotiff.js](https://github.com/geotiffjs/geotiff.js/), and then piped into custom WebGL shaders that form the basis of each layer.
 
-NOTE: before this project, I had very little experience with Mapbox or React, and no experience with DEM data or WebGL. At the end of the day, this is a for-fun personal project.
+NOTE: Before this project, I had very little experience with Mapbox or React, and no experience with DEM data or WebGL. At the end of the day, this is a for-fun personal project.
 
 Here is the map showing the elevation layer:
 
