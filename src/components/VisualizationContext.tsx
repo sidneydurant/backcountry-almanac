@@ -1,7 +1,7 @@
 import { createContext, useState, ReactNode } from 'react';
 
 // Define the available visualization types
-export type VisualizationType = 'elevation' | 'slope' | 'aspect'; // TODO: Solar Exposure, Solar Irradiance, Insolation
+export type VisualizationType = 'elevation' | 'slope' | 'aspect' | 'none'; // TODO: 'exposure', 'irradiance', 'insolation'
 
 // Define the context interface
 interface VisualizationContextType {

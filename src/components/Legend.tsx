@@ -5,7 +5,7 @@ import { useContext } from 'react';
 const legendDetails = [
     { 
         value: 'elevation',
-        info: 'This layer shows the elevation of the terrain.',
+        info: 'This layer visualizes the elevation of the terrain.',
         scale: (
             <div>
                 <span className="text-green-500 mr-4">1750m</span>
@@ -18,22 +18,22 @@ const legendDetails = [
             </div>
         )
     },
-    { 
+    {
         value: 'slope',
-        info: 'This layer shows the slope angle of the terrain.', 
+        info: 'This layer visualizes the slope angle of the terrain.', 
         scale: (
             <div>
                 <span className="text-green-500 mr-4">&lt;20°</span>
-                <span className="text-yellow-500 mr-4">30°</span>
-                <span className="text-orange-500 mr-4">40°</span>
-                <span className="text-red-500 mr-4">50°</span>
+                <span className="text-yellow-500 mr-4">~30°</span>
+                <span className="text-orange-500 mr-4">~40°</span>
+                <span className="text-red-500 mr-4">~50°</span>
                 <span className="text-purple-500 mr-4">&gt;60°</span>
             </div>
         )
     },
-    { 
+    {
         value: 'aspect',
-        info: 'This layer shows the aspect of the terrain.',
+        info: 'This layer visualizes the aspect of the terrain.',
         scale: (<div>
             <span className="text-cyan-500 mr-4">North</span>
             <span className="text-blue-500 mr-4">Northeast</span>
@@ -54,7 +54,7 @@ const Legend = () => {
     const activeLegend = legendDetails.find(legend => legend.value === activeVisualization)
 
     return (
-        <div id="legend" className="fixed right-0 top-0 bg-white z-50 m-4 rounded-lg drop-shadow-xl">
+        <div id="legend" className="fixed right-0 top-0 bg-white z-50 m-4 rounded-lg shadow-xl ring">
             <div className="p-4">
                 {activeLegend ? (
                     <div>
@@ -62,7 +62,7 @@ const Legend = () => {
                         {activeLegend.scale}
                     </div>
                 ) : (
-                    <p>Select a visualization to see its legend.</p>
+                    <p>Select an overlay to see its legend.</p>
                 )}
             </div>
         </div>
