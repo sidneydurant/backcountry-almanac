@@ -32,7 +32,7 @@ interface CustomLayer {
 
 export const createVisualizationLayer = (visualizationType: VisualizationType): CustomLayer => {
     // Select the appropriate vertex shader based on the visualization type
-    let vertexShaderSource: string;
+    let vertexShaderSource: string | null;
     console.log('visualizationType', visualizationType);
     switch (visualizationType) {
         case 'elevation':
@@ -43,6 +43,9 @@ export const createVisualizationLayer = (visualizationType: VisualizationType): 
             break;
         case 'aspect':
             vertexShaderSource = aspectVertexShaderSource;
+            break;
+        case 'none':
+            vertexShaderSource = null;
             break;
         default:
             vertexShaderSource = elevationVertexShaderSource;
@@ -67,7 +70,10 @@ export const createVisualizationLayer = (visualizationType: VisualizationType): 
 
         // onAdd is called when the layer is added to the map
         onAdd: function (_map: mapboxgl.Map, gl: any) {
-
+            if (!vertexShaderSource) {
+                return;
+            }
+            
             // Create and compile the vertex shader
             const vertexShader = gl.createShader(gl.VERTEX_SHADER);
             gl.shaderSource(vertexShader, vertexShaderSource);
@@ -120,7 +126,7 @@ export const createVisualizationLayer = (visualizationType: VisualizationType): 
             this.uGridSpacing = gl.getUniformLocation(this.program, 'u_grid_spacing');
 
             // TODO: make the bounding box dynamic based on viewport
-            const boundingBox = [{ lng: -121.61, lat: 40.42}, { lng: -121.45, lat: 40.50}];
+            const boundingBox = [{ lng: -121.64, lat: 40.40}, { lng: -121.42, lat: 40.54}];
 
             // TODO: make the cell size dynamic based on viewport
             const cellSizeMercator = 0.00000175/8;

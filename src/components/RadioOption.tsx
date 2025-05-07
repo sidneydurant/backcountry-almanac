@@ -6,6 +6,7 @@ interface RadioOptionProps {
     label: string;
     checked: boolean;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    disabled?: boolean;
     className?: string;
     labelClassName?: string;
 }
@@ -16,8 +17,9 @@ const RadioOption: React.FC<RadioOptionProps> = ({
     label,
     checked,
     onChange,
+    disabled = false,
     className = '',
-    labelClassName = 'text-sm font-medium pl-4'
+    labelClassName = 'text-sm font-medium pl-4' + (disabled ? ' text-gray-400':'')
 }) => {
     return (
         <div className={`flex items-center justify-left ${className}`}>
@@ -27,6 +29,7 @@ const RadioOption: React.FC<RadioOptionProps> = ({
                 type="radio"
                 value={value}
                 name={name}
+                disabled={disabled}
                 className="w-4 h-4"
             />
             <label className={labelClassName}>{label}</label>
