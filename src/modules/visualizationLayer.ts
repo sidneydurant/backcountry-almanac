@@ -9,7 +9,7 @@ import { VisualizationType } from '../components/VisualizationContext';
 // TODO: this file currently contains far too much. Separate out shader management, webgl utilities and & data parsing
 
 const elevationDataProvider = new ElevationDataProvider();
-elevationDataProvider.initialize('./lassen-cropped-dem-data.tif'); // TODO: add error handling
+elevationDataProvider.initialize('/lassen-cropped-dem-data.tif'); // TODO: add error handling
 
 interface CustomLayer {
     aElevation: number;
