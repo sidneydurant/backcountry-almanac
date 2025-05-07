@@ -3,16 +3,14 @@ import { VisualizationContext, VisualizationType } from './VisualizationContext'
 import { useContext } from 'react';
 import RadioOption from './RadioOption';
 
-// TODO: split sidebar into various components. Add a legend with units when any particular option is selected
-// TODO: figure out how best to do this. Add an infobubble.
+const visualizationOptions = [
+    { value: 'elevation', label: 'Elevation' },
+    { value: 'slope', label: 'Slope Angle' },
+    { value: 'aspect', label: 'Aspect' }
+];
+
 const Sidebar = () => {
     const { activeVisualization, setActiveVisualization } = useContext(VisualizationContext);
-
-    const visualizationOptions = [
-        { value: 'elevation', label: 'Elevation' },
-        { value: 'slope', label: 'Slope Angle' },
-        { value: 'aspect', label: 'Aspect' }
-    ];
 
     const onRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setActiveVisualization(event.target.value as VisualizationType);

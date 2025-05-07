@@ -9,7 +9,7 @@ import { VisualizationContext } from './VisualizationContext';
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
 // Default center coordinates for the map view (Lassen Volcanic National Park)
-const LASSEN_CENTER: [number, number] = [-121.53, 40.46];
+const LASSEN_CENTER: [number, number] = [-121.53, 40.47];
 
 const Map = () => {
     // React refs to store references to the map container DOM element and the mapbox instance
