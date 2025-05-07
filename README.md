@@ -4,18 +4,33 @@ This is a (Vite/React) web app that uses Mapbox GL JS to create an interactive m
 
 NOTE: Before this project, I had very little experience with Mapbox or React, and no experience with DEM data or WebGL. At the end of the day, this is a for-fun personal project.
 
-Here is the map showing the elevation layer:
+Here is the map showing the elevation overlay:
 
 ![A map of Lassen National Park, with a custom elevation layer rendered on top.](./img/elevation-screenshot.png)
 
-Here is the map showing the aspect layer:
+Here is the map showing the slope angle overlay:
+
+![A map of Lassen National Park, with a custom slope angle layer rendered on top.](./img/slope-screenshot.png)
+
+Here is the map showing the aspect overlay:
 
 ![A map of Lassen National Park, with a custom aspect layer rendered on top.](./img/aspect-screenshot.png)
 
-Here is the map showing the slope angle layer:
+And here is the base map, with no overlay:
 
-![A map of Lassen National Park, with a custom slope angle layer rendered on top.](./img/slopeangle-screenshot.png)
+![A map of Lassen National Park, with no overlay.](./img/base-screenshot.png)
 
 The eventual goal is to show information about current conditions by creating layers that display Solar Exposure (boolean), Solar Irradiance (W/m<sup>2</sup>), and Insolation (Wh/m<sup>2</sup>) for a user-specified time. Solar Exposure is tricky because one needs to take into account shadows cast by surrounding terrain. Solar Irradiance and Insolation are dependent on this as well. These layers could be used to estimate when a refrozen slope may soften and offer good skiing, or when a slope covered in powder can be expected to warm up and start avalanching.
 
 Longer term, integrating weather data could be interesting as well, to help account for the wind, cloud cover & temperature's impact on the snowpack.
+
+#TODOs:
+    [✔] Add todo tracker in README so that folks looking at the repo can see what issues I'm aware of
+    [ ] Continue to cleanup code - add inline todos for bigger items
+    [ ] Create thorough documentation
+    [ ] Add unittests
+    [ ] Add eslint for consistent code formatting
+    [ ] Pull 'card' styling into a wrapper component to be shared by Sidebar.tsx and Legend.tsx
+    [ ] Create 'SettingsGroup' component to avoid duplicated divs in Sidebar.tsx
+    [ ] Add support for satellite basemap
+    [ ] Fix bug where with quick repeated clicks, the displayed layer doesn't match the selected radio option
