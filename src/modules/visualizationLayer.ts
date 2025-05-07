@@ -9,7 +9,7 @@ import { VisualizationType } from '../components/VisualizationContext';
 // TODO: this file currently contains far too much. Separate out shader management, webgl utilities and & data parsing
 
 const elevationDataProvider = new ElevationDataProvider();
-elevationDataProvider.initialize('./src/assets/lassen-cropped-dem-data.tif'); // TODO: add error handling
+elevationDataProvider.initialize('./public/lassen-cropped-dem-data.tif'); // TODO: add error handling
 
 interface CustomLayer {
     aElevation: number;
@@ -73,7 +73,7 @@ export const createVisualizationLayer = (visualizationType: VisualizationType): 
             if (!vertexShaderSource) {
                 return;
             }
-            
+
             // Create and compile the vertex shader
             const vertexShader = gl.createShader(gl.VERTEX_SHADER);
             gl.shaderSource(vertexShader, vertexShaderSource);
