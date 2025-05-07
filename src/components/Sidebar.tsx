@@ -1,4 +1,4 @@
-// This component is a sidebar that lets you change settings for the map display
+// The main sidebar component that lets you change map settings
 import { VisualizationContext, VisualizationType } from './VisualizationContext';
 import { useContext } from 'react';
 import RadioOption from './RadioOption';
@@ -17,13 +17,6 @@ const Sidebar = () => {
         setActiveVisualization(event.target.value as VisualizationType);
     };
 
-    // TODO: pull 'card' styling into separate wrapper react component that can be shared by Sidebar.tsx and Legend.tsx
-    // TODO: create 'SettingsGroup' component to avoid duplicated divs
-
-    // TODO: after quick repeated clicks, the displayed layer may not match the radio option
-
-    // TODO: add linter
-
     return (
         <div id="sidebar" className="fixed left-0 top-0 bg-white z-50 m-4 rounded-lg shadow-xl ring">
             <div className="p-6">
@@ -40,7 +33,7 @@ const Sidebar = () => {
                     <RadioOption
                         value="satellite"
                         name="basemap"
-                        label="Satellite (coming soon!)"
+                        label="Satellite (Coming soon!)"
                         checked={false}
                         onChange={() => {}}
                         disabled
