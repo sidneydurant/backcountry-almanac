@@ -2,6 +2,7 @@ import Map from './components/Map'
 import Sidebar from './components/Sidebar'
 import './App.css'
 import { VisualizationProvider } from './components/VisualizationContext'
+import Legend from './components/Legend'
 
 function App() {
 
@@ -10,6 +11,7 @@ function App() {
             <VisualizationProvider>
                 <Sidebar/>
                 <Map/>
+                <Legend/>
             </VisualizationProvider>
         </main>
     );

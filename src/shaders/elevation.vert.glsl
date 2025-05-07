@@ -1,8 +1,12 @@
+// NOTE: 'Attributes' are a way to pass data from the JavaScript code to the shader
 attribute vec4 a_position;
 attribute float a_elevation;
 
+// NOTE: 'Varyings' are a way to pass data from the vertex shader to the fragment shader
 varying vec4 v_color;
 
+// NOTE: 'Uniforms' are effectively global variables that do not change across invocations
+// of the shader for a single draw call.
 uniform mat4 u_matrix;
 
 void main() {
