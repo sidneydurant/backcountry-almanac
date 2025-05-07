@@ -35,10 +35,14 @@ const legendDetails = [
         value: 'aspect',
         info: 'This layer shows the aspect of the terrain.',
         scale: (<div>
-            <span className="text-yellow-500 mr-4">North</span>
-            <span className="text-orange-500 mr-4">East</span>
-            <span className="text-purple-500 mr-4">South</span>
-            <span className="text-green-500 mr-4">West</span>
+            <span className="text-cyan-500 mr-4">North</span>
+            <span className="text-blue-500 mr-4">Northeast</span>
+            <span className="text-purple-500 mr-4">East</span>
+            <span className="text-pink-500 mr-4">Southeast</span>
+            <span className="text-red-500 mr-4">South</span>
+            <span className="text-orange-500 mr-4">Southwest</span>
+            <span className="text-yellow-500 mr-4">West</span>
+            <span className="text-green-500 mr-4">Northwest</span>
         </div>)
     }
 ];
