@@ -248,6 +248,10 @@ export const createVisualizationLayer = (visualizationType: VisualizationType): 
             gl.uniformMatrix4fv(gl.getUniformLocation(this.program, 'u_matrix'), false, matrix);
             
             // Bind position buffer and set up position attribute
+            // NOTE: webgl uses a state based approach, so you start by binding the buffer, and then specify which
+            // attribute should read from "the current buffer". There is no "connect buffer X to attribute Y" function.
+            // Operations work on what is currently "bound". So you see the same pattern where I fill the buffer data
+            // above with the gl.bufferData calls made immediately after the bindBuffer calls.
             gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer ?? null);
             gl.enableVertexAttribArray(this.aPosition);
             gl.vertexAttribPointer(this.aPosition, 2, gl.FLOAT, false, 0, 0);
