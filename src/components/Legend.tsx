@@ -2,51 +2,48 @@
 import { VisualizationContext } from './VisualizationContext';
 import { useContext } from 'react';
 
-const Legend = () => {
+const legendDetails = [
+    { 
+        value: 'elevation',
+        info: 'This layer shows the elevation of the terrain.',
+        scale: (
+            <div>
+                <span className="text-green-500 mr-4">1750m</span>
+                <span className="text-cyan-500 mr-4">2000m</span>
+                <span className="text-purple-500 mr-4">2250m</span>
+                <span className="text-pink-500 mr-4">2500m</span>
+                <span className="text-orange-500 mr-4">2750m</span>
+                <span className="text-yellow-500 mr-4">3000m</span>
+                <span className="text-green-500 mr-4">3250m</span>
+            </div>
+        )
+    },
+    { 
+        value: 'slope',
+        info: 'This layer shows the slope angle of the terrain.', 
+        scale: (
+            <div>
+                <span className="text-green-500 mr-4">&lt;20°</span>
+                <span className="text-yellow-500 mr-4">30°</span>
+                <span className="text-orange-500 mr-4">40°</span>
+                <span className="text-red-500 mr-4">50°</span>
+                <span className="text-purple-500 mr-4">&gt;60°</span>
+            </div>
+        )
+    },
+    { 
+        value: 'aspect',
+        info: 'This layer shows the aspect of the terrain.',
+        scale: (<div>
+            <span className="text-yellow-500 mr-4">North</span>
+            <span className="text-orange-500 mr-4">East</span>
+            <span className="text-purple-500 mr-4">South</span>
+            <span className="text-green-500 mr-4">West</span>
+        </div>)
+    }
+];
 
-    const legendDetails = [
-        { 
-            value: 'elevation',
-            label: 'Elevation',
-            info: 'This layer shows the elevation of the terrain.',
-            scale: (
-                <div>
-                    <span className="text-green-500 mr-4">1750m</span>
-                    <span className="text-cyan-500 mr-4">2000m</span>
-                    <span className="text-purple-500 mr-4">2250m</span>
-                    <span className="text-pink-500 mr-4">2500m</span>
-                    <span className="text-orange-500 mr-4">2750m</span>
-                    <span className="text-yellow-500 mr-4">3000m</span>
-                    <span className="text-green-500 mr-4">3250m</span>
-                </div>
-            )
-        },
-        { 
-            value: 'slope',
-            label: 'Slope Angle', 
-            info: 'This layer shows the slope angle of the terrain.', 
-            scale: (
-                <div>
-                    <span className="text-green-500 mr-4">&lt;30°</span>
-                    <span className="text-yellow-500 mr-4">30°</span>
-                    <span className="text-orange-500 mr-4">40°</span>
-                    <span className="text-red-500 mr-4">50°</span>
-                    <span className="text-purple-500 mr-4">&gt;60°</span>
-                </div>
-            )
-        },
-        { 
-            value: 'aspect',
-            label: 'Aspect',
-            info: 'This layer shows the aspect of the terrain.',
-            scale: (<div>
-                <span className="text-yellow-500 mr-4">North</span>
-                <span className="text-orange-500 mr-4">East</span>
-                <span className="text-purple-500 mr-4">South</span>
-                <span className="text-green-500 mr-4">West</span>
-            </div>)
-        }
-    ];
+const Legend = () => {
 
     const { activeVisualization } = useContext(VisualizationContext);
 
