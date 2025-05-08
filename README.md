@@ -2,7 +2,7 @@
 
 ## Goals
 
-The goal of this project is first and foremost to learn. The 'modern' web framework I used at my last job (LWC) was introduced in February 2019, and was touted as being comparable to React's class based components... which were supplanted by React's function based components later that same month. I want to modernize my web development skills.
+The goal of this project is first and foremost to learn. The 'modern' web framework I used at my last job (LWC) was introduced in February 2019, and was touted as being comparable to React's class based components... which were superseded by React's function based components later that same month. I want to modernize my web development skills.
 
 The secondary goal of this project is to build an interactive terrain visualizer that would be useful to someone planning a backcountry ski trip. I'd like to create custom layers that other mapping apps do not have, such as Solar Exposure (boolean), Irradiance (W/m<sup>2</sup>), and Insolation (Wh/m<sup>2</sup>) for a user-specified date & time. Solar exposure, irradiance & insolation are tricky because (in addition to calculating the sun's position in the sky for given GPS coordinates) one needs to take into account shadows cast by surrounding terrain. These layers would provide information that could be used to estimate when a refrozen slope may soften and offer good skiing, or when a slope covered in fresh powder can be expected to warm up and start avalanching.
 
@@ -21,16 +21,23 @@ This project is a modern web application built using the following tools, framew
 ### Map Visualization
 - **Mapbox GL JS**: Interactive map with WebGL acceleration
 - **Custom WebGL Shaders**: GPU accelerated terrain visualization
-- **[geotiff.js](https://github.com/geotiffjs/geotiff.js/)**: Library used to parse and process Digital Elevation Model (DEM) data
 
 ### Data Sources + Management
-- **[USGS National Map](https://apps.nationalmap.gov/downloader/)**: Provides downloadable high-resolution DEM data of the United States
-- **Static Asset**: I haven't built anything interesting to load the DEM data. Just a single static asset (.tif) stored on disc (for now...)
+- **[USGS National Map](https://apps.nationalmap.gov/downloader/)**: Provides high-resolution DEM data of the United States, downloadable as a `.tif`. I haven't built anything to dynamically load DEM data from the backend. It is just a single static asset stored on disc (for now...)
+- **[geotiff.js](https://github.com/geotiffjs/geotiff.js/)**: Library used to parse and process Digital Elevation Model (DEM) data
 
 ### State Management
 - React Context API: For state management (no Redux... yet)
 
 **NOTE:** Before this project, I had minimal experience with Mapbox, React, Typescript or Tailwind and no experience with processing DEM data or writing WebGL shaders.
+
+## Component Overview
+
+The component hierarchy is straightforward:
+
+![A diagram showing the React components of this project.](./img/component-overview.png)
+
+These are all presentational components except for `VisualizationProvider.tsx`, which is a container component that manages which visualization type is active. `Sidebar.tsx`, `Map.tsx` and `Legend.tsx` all consume the `VisualizationContext`.
 
 ## Screenshots
 
@@ -53,10 +60,10 @@ And here is the base map, with no overlay:
 ## To-Dos:
 
     [✔] Add todo tracker to README so that folks looking at the repo will see it
-    [ ] Continue to cleanup code - add inline todos for bigger items
+    [ ] Continue to cleanup code - add inline todos for bigger items. Now that things have stabilized a bit, add thorough high level comments
     [ ] Create thorough documentation
-    [ ] Add unittests
-    [ ] Add eslint for consistent code formatting
+    [ ] Add unit tests (try vitest or default to regular jest)
+    [ ] Set up eslint for consistent code formatting
     [ ] Pull 'card' styling into a wrapper component to be shared by Sidebar.tsx and Legend.tsx
     [ ] Create 'SettingsGroup' component to avoid duplicated divs in Sidebar.tsx
     [ ] Add support for satellite basemap
