@@ -4,7 +4,7 @@ import slopeVertexShaderSource from '../shaders/slope.vert.glsl?raw';
 import aspectVertexShaderSource from '../shaders/aspect.vert.glsl?raw';
 import defaultFragmentShaderSource from '../shaders/default.frag.glsl?raw';
 import { ElevationDataProvider } from '../modules/elevationDataProvider';
-import { VisualizationType } from '../components/VisualizationContext';
+import { VisualizationType } from '../components/VisualizationProvider';
 
 // TODO: this file currently contains far too much. Separate out shader management, webgl utilities and & data parsing
 

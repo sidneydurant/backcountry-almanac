@@ -3,7 +3,7 @@ import { useEffect, useRef, useContext } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { createVisualizationLayer } from '../modules/visualizationLayer';
-import { VisualizationContext } from './VisualizationContext';
+import { VisualizationContext } from './VisualizationProvider';
 
 // Set Mapbox API token
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;

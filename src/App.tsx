@@ -1,7 +1,7 @@
 import Map from './components/Map'
 import Sidebar from './components/Sidebar'
 import './App.css'
-import { VisualizationProvider } from './components/VisualizationContext'
+import { VisualizationProvider } from './components/VisualizationProvider'
 import Legend from './components/Legend'
 
 function App() {
