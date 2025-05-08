@@ -60,10 +60,10 @@ And here is the base map, with no overlay:
 ## To-Dos:
 
     [✔] Add todo tracker to README so that folks looking at the repo will see it
-    [ ] Continue to cleanup code - add inline todos for bigger items
+    [ ] Continue to cleanup code - add inline todos for bigger items. Now that things have stabilized a bit, add thorough high level comments
     [ ] Create thorough documentation
-    [ ] Add unittests
-    [ ] Add eslint for consistent code formatting
+    [ ] Add unit tests (try vitest or default to regular jest)
+    [ ] Set up eslint for consistent code formatting
     [ ] Pull 'card' styling into a wrapper component to be shared by Sidebar.tsx and Legend.tsx
     [ ] Create 'SettingsGroup' component to avoid duplicated divs in Sidebar.tsx
     [ ] Add support for satellite basemap
