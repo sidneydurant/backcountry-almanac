@@ -21,11 +21,10 @@ This project is a modern web application built using the following tools, framew
 ### Map Visualization
 - **Mapbox GL JS**: Interactive map with WebGL acceleration
 - **Custom WebGL Shaders**: GPU accelerated terrain visualization
-- **[geotiff.js](https://github.com/geotiffjs/geotiff.js/)**: Library used to parse and process Digital Elevation Model (DEM) data
 
 ### Data Sources + Management
-- **[USGS National Map](https://apps.nationalmap.gov/downloader/)**: Provides downloadable high-resolution DEM data of the United States
-- **Static Asset**: I haven't built anything interesting to load the DEM data. Just a single static asset (.tif) stored on disc (for now...)
+- **[USGS National Map](https://apps.nationalmap.gov/downloader/)**: Provides high-resolution DEM data of the United States, downloadable as a `.tif`. I haven't built anything to dynamically load DEM data from the backend. It is just a single static asset stored on disc (for now...)
+- **[geotiff.js](https://github.com/geotiffjs/geotiff.js/)**: Library used to parse and process Digital Elevation Model (DEM) data
 
 ### State Management
 - React Context API: For state management (no Redux... yet)
@@ -38,7 +37,7 @@ The component hierarchy is straightforward:
 
 ![A diagram showing the React components of this project.](./img/component-overview.png)
 
-These are all presentational components except for VisualizationProvider, which is a container component that manages which visualization type is active. Sidebar.tsx, Map.tsx and Legend.tsx all consume the VisualizationContext.
+These are all presentational components except for `VisualizationProvider.tsx`, which is a container component that manages which visualization type is active. `Sidebar.tsx`, `Map.tsx` and `Legend.tsx` all consume the `VisualizationContext`.
 
 ## Screenshots
 
