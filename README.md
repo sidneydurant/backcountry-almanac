@@ -23,8 +23,9 @@ This project is a modern web application built using the following tools, framew
 - **Custom WebGL Shaders**: GPU accelerated terrain visualization
 - **[geotiff.js](https://github.com/geotiffjs/geotiff.js/)**: Library used to parse and process Digital Elevation Model (DEM) data
 
-### Data Sources
+### Data Sources + Management
 - **[USGS National Map](https://apps.nationalmap.gov/downloader/)**: Provides downloadable high-resolution DEM data of the United States
+- **Static Asset**: I haven't built anything interesting to load the DEM data. Just a single static asset (.tif) stored on disc (for now...)
 
 ### State Management
 - React Context API: For state management (no Redux... yet)

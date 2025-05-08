@@ -1,5 +1,5 @@
 // The main sidebar component that lets you change map settings
-import { VisualizationContext, VisualizationType } from './VisualizationContext';
+import { VisualizationContext, VisualizationType } from './VisualizationProvider';
 import { useContext } from 'react';
 import RadioOption from './RadioOption';
 

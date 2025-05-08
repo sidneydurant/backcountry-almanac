@@ -1,5 +1,5 @@
 // The legend for the currently selected layer
-import { VisualizationContext } from './VisualizationContext';
+import { VisualizationContext } from './VisualizationProvider';
 import { useContext } from 'react';
 
 const legendDetails = [
