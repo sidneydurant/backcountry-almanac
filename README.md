@@ -32,6 +32,14 @@ This project is a modern web application built using the following tools, framew
 
 **NOTE:** Before this project, I had minimal experience with Mapbox, React, Typescript or Tailwind and no experience with processing DEM data or writing WebGL shaders.
 
+## Component Overview
+
+The component hierarchy is straightforward:
+
+![A diagram showing the React components of this project.](./img/component-overview.png)
+
+These are all presentational components except for VisualizationProvider, which is a container component that manages which visualization type is active. Sidebar.tsx, Map.tsx and Legend.tsx all consume the VisualizationContext.
+
 ## Screenshots
 
 Here is the map showing the elevation overlay:
