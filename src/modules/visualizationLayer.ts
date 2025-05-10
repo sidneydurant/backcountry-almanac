@@ -1,129 +1,58 @@
 import mapboxgl from 'mapbox-gl';
-import elevationVertexShaderSource from '../shaders/elevation.vert.glsl?raw'; // ?raw tells Vite to load the file as a string
-import slopeVertexShaderSource from '../shaders/slope.vert.glsl?raw';
-import aspectVertexShaderSource from '../shaders/aspect.vert.glsl?raw';
-import defaultFragmentShaderSource from '../shaders/default.frag.glsl?raw';
-import { ElevationDataProvider } from '../modules/elevationDataProvider';
+import { ElevationDataProvider } from './elevationDataProvider';
 import { VisualizationType } from '../components/VisualizationProvider';
+import { ShaderManager, ShaderProgram } from './shaderManager';
 
-// TODO: this file currently contains far too much. Separate out shader management, webgl utilities and & data parsing
+// TODO: separate out data parsing and WebGL rendering utilities
 
 const elevationDataProvider = new ElevationDataProvider();
 elevationDataProvider.initialize('/lassen-cropped-dem-data.tif'); // TODO: add error handling
 
 interface CustomLayer {
-    aElevation: number;
-    aElevationNX: number;
-    aElevationNZ: number;
-    uGridSpacing: number;
-    gridSpacing: number;
-    aPosition: number;
-    vertexCount: number;
     id: string;
     type: 'custom';
-    program: WebGLProgram | null; // Stores compiled and linked shader program
+    shaderManager: ShaderManager | null;
+    shaderProgram: ShaderProgram | null;
+    visualizationType: VisualizationType;
     posBuffer: WebGLBuffer | null; // Stores vertex data for each triangle
     elevationBuffer: WebGLBuffer | null; // Stores elevation data for each vertex
     elevationNXBuffer: WebGLBuffer | null; // Stores elevation data for neighbor vertex in +X direction
     elevationNZBuffer: WebGLBuffer | null; // Stores elevation data for neighbor vertex in +Z direction
+    gridSpacing: number;
+    vertexCount: number;
     onAdd: (map: mapboxgl.Map, gl: WebGLRenderingContext) => void;
     render: (gl: WebGLRenderingContext, matrix: number[]) => void;
 }
 
 export const createVisualizationLayer = (visualizationType: VisualizationType): CustomLayer => {
-    // Select the appropriate vertex shader based on the visualization type
-    let vertexShaderSource: string | null;
-    console.log('visualizationType', visualizationType);
-    switch (visualizationType) {
-        case 'elevation':
-            vertexShaderSource = elevationVertexShaderSource;
-            break;
-        case 'slope':
-            vertexShaderSource = slopeVertexShaderSource;
-            break;
-        case 'aspect':
-            vertexShaderSource = aspectVertexShaderSource;
-            break;
-        case 'none':
-            vertexShaderSource = null;
-            break;
-        default:
-            vertexShaderSource = elevationVertexShaderSource;
-    }
-
     // Define a custom WebGL layer that will be added to the map for data visualization
     const visualizationLayer: CustomLayer = {
         id: 'visualization',
         type: 'custom',
-        aElevation: 0,
-        aElevationNX: 0,
-        aElevationNZ: 0,
-        uGridSpacing: 0,
+        shaderManager: null,
+        shaderProgram: null,
+        visualizationType,
         gridSpacing: 0,
-        aPosition: 0,
         vertexCount: 0,
-        program: null,
         posBuffer: null,
         elevationBuffer: null,
         elevationNXBuffer: null,
         elevationNZBuffer: null,
 
         // onAdd is called when the layer is added to the map
-        onAdd: function (_map: mapboxgl.Map, gl: any) {
-            if (!vertexShaderSource) {
-                return;
-            }
-
-            // Create and compile the vertex shader
-            const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-            gl.shaderSource(vertexShader, vertexShaderSource);
-            gl.compileShader(vertexShader);
+        onAdd: function (_map: mapboxgl.Map, gl: WebGLRenderingContext) {
+            // Initialize the shader manager
+            this.shaderManager = new ShaderManager(gl);
             
-            if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-                // Something went wrong during compilation; get the error
-                const error = gl.getShaderInfoLog(vertexShader);
-                console.error("Vertex shader compilation error:", error);
-                gl.deleteShader(vertexShader);
-                return null;
-            }
-
-            // Create and compile the fragment shader
-            const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-            gl.shaderSource(fragmentShader, defaultFragmentShaderSource);
-            gl.compileShader(fragmentShader);
-
-            if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-                // Something went wrong during compilation; get the error
-                const error = gl.getShaderInfoLog(vertexShader);
-                console.error("Fragment shader compilation error:", error);
-                gl.deleteShader(vertexShader);
-                return null;
-            }
-
-            // Create and link shader program
-            this.program = gl.createProgram();
-
-            gl.attachShader(this.program, vertexShader);
-            gl.attachShader(this.program, fragmentShader);
-            gl.linkProgram(this.program);
-
-            // Check program linking
-            if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-                console.error('Shader program linking error:', gl.getProgramInfoLog(this.program));
+            // Get shader program for the specified visualization type
+            this.shaderProgram = this.shaderManager.getShaderProgram(this.visualizationType);
+            
+            // If no program is needed (e.g., 'none' type), exit early
+            if (!this.shaderProgram) {
                 return;
             }
             
-            // If we get here, everything compiled and linked successfully
-            console.log('Shaders compiled and linked successfully!');
-
-            // Get the location of the shader attributes
-            this.aPosition = gl.getAttribLocation(this.program, 'a_position');
-            this.aElevation = gl.getAttribLocation(this.program, 'a_elevation');
-            this.aElevationNX = gl.getAttribLocation(this.program, 'a_elevation_nx');
-            this.aElevationNZ = gl.getAttribLocation(this.program, 'a_elevation_nz');
-
-            // TODO: Add a new uniform for grid spacing TODO: figure out the math for getting this to match no matter the latitude/longitude/zoom
-            this.uGridSpacing = gl.getUniformLocation(this.program, 'u_grid_spacing');
+            console.log('Initializing visualization layer:', this.visualizationType);
 
             // TODO: make the bounding box dynamic based on viewport
             const boundingBox = [{ lng: -121.64, lat: 40.40}, { lng: -121.42, lat: 40.54}];
@@ -177,16 +106,16 @@ export const createVisualizationLayer = (visualizationType: VisualizationType): 
                     // Each cell consists of two triangles (6 vertices total)
                     // First triangle: top-left, bottom-left, bottom-right
                     vertices.push(
-                    x1, y1,  // top-left
-                    x1, y2,  // bottom-left
-                    x2, y2   // bottom-right
+                        x1, y1,  // top-left
+                        x1, y2,  // bottom-left
+                        x2, y2   // bottom-right
                     );
                     
                     // Second triangle: top-left, bottom-right, top-right
                     vertices.push(
-                    x1, y1,  // top-left
-                    x2, y2,  // bottom-right
-                    x2, y1   // top-right
+                        x1, y1,  // top-left
+                        x2, y2,  // bottom-right
+                        x2, y1   // top-right
                     );
                     
                     // Add elevation for each vertex (same elevation for all vertices in a square)
@@ -201,7 +130,6 @@ export const createVisualizationLayer = (visualizationType: VisualizationType): 
                             nextXElevation = elevationGrid[i + 1][j];
                         }
                         elevationsNX.push(nextXElevation);
-
                         
                         // Get elevation of neighbor in +Z direction (with bounds checking)
                         let nextZElevation = elevation; // Default to same elevation if at boundary
@@ -223,62 +151,71 @@ export const createVisualizationLayer = (visualizationType: VisualizationType): 
             gl.bindBuffer(gl.ARRAY_BUFFER, this.elevationBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(elevations), gl.STATIC_DRAW);
 
-            if (this.aElevationNX > -1) {
-                this.elevationNXBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.elevationNXBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(elevationsNX), gl.STATIC_DRAW);
-            }
+            // TODO: check if the shader needs neighbor elevations in X direction, if not, skip creating buffer
+            this.elevationNXBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.elevationNXBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(elevationsNX), gl.STATIC_DRAW);
             
-            if (this.aElevationNZ > -1) {
-                this.elevationNZBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.elevationNZBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(elevationsNZ), gl.STATIC_DRAW);
-            }
+            // TODO: check if the shader needs neighbor elevations in X direction, if not, skip creating buffer
+            this.elevationNZBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.elevationNZBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(elevationsNZ), gl.STATIC_DRAW);
 
             // Store the number of vertices
             this.vertexCount = vertices.length / 2;
         },
 
         // render is called on every frame update when the map needs to be redrawn
-        render: function (gl, matrix) {
-
-            if (!this.program) {
-                console.log('Program not initialized');
+        render: function (gl: WebGLRenderingContext, matrix: number[]) {
+            if (!this.shaderProgram) {
                 return;
             }
             
+            const { program, attributes, uniforms } = this.shaderProgram;
+            
             // Activate our shader program
-            gl.useProgram(this.program);
+            gl.useProgram(program);
             
             // Set the transformation matrix uniform
-            gl.uniformMatrix4fv(gl.getUniformLocation(this.program, 'u_matrix'), false, matrix);
+            if (uniforms['u_matrix']) {
+                gl.uniformMatrix4fv(uniforms['u_matrix'], false, matrix);
+            }
+            
+            // Set grid spacing uniform if available
+            if (uniforms['u_grid_spacing']) {
+                gl.uniform1f(uniforms['u_grid_spacing'], this.gridSpacing);
+            }
             
             // Bind position buffer and set up position attribute
             // NOTE: webgl uses a state based approach, so you start by binding the buffer, and then specify which
             // attribute should read from "the current buffer". There is no "connect buffer X to attribute Y" function.
             // Operations work on what is currently "bound". So you see the same pattern where I fill the buffer data
             // above with the gl.bufferData calls made immediately after the bindBuffer calls.
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer ?? null);
-            gl.enableVertexAttribArray(this.aPosition);
-            gl.vertexAttribPointer(this.aPosition, 2, gl.FLOAT, false, 0, 0);
-            
-            // Bind elevation buffer and set up elevation attribute
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.elevationBuffer ?? null);
-            gl.enableVertexAttribArray(this.aElevation);
-            gl.vertexAttribPointer(this.aElevation, 1, gl.FLOAT, false, 0, 0);
-            
-            // aElevationNX is only used for aspect & slope visualization
-            if (this.aElevationNX > -1) {
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.elevationNXBuffer ?? null);
-                gl.enableVertexAttribArray(this.aElevationNX);
-                gl.vertexAttribPointer(this.aElevationNX, 1, gl.FLOAT, false, 0, 0);
+            if (attributes['a_position'] > -1) {
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+                gl.enableVertexAttribArray(attributes['a_position']);
+                gl.vertexAttribPointer(attributes['a_position'], 2, gl.FLOAT, false, 0, 0);
             }
             
-            // aElevationNZ is only used for aspect & slope visualization
-            if (this.aElevationNZ > -1) {
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.elevationNZBuffer ?? null);
-                gl.enableVertexAttribArray(this.aElevationNZ);
-                gl.vertexAttribPointer(this.aElevationNZ, 1, gl.FLOAT, false, 0, 0);
+            // Bind elevation buffer and set up elevation attribute
+            if (attributes['a_elevation'] > -1) {
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.elevationBuffer);
+                gl.enableVertexAttribArray(attributes['a_elevation']);
+                gl.vertexAttribPointer(attributes['a_elevation'], 1, gl.FLOAT, false, 0, 0);
+            }
+            
+            // Set up neighbor elevation in X direction if needed
+            if (attributes['a_elevation_nx'] > -1 && this.elevationNXBuffer) {
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.elevationNXBuffer);
+                gl.enableVertexAttribArray(attributes['a_elevation_nx']);
+                gl.vertexAttribPointer(attributes['a_elevation_nx'], 1, gl.FLOAT, false, 0, 0);
+            }
+            
+            // Set up neighbor elevation in Z direction if needed
+            if (attributes['a_elevation_nz'] > -1 && this.elevationNZBuffer) {
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.elevationNZBuffer);
+                gl.enableVertexAttribArray(attributes['a_elevation_nz']);
+                gl.vertexAttribPointer(attributes['a_elevation_nz'], 1, gl.FLOAT, false, 0, 0);
             }
             
             // Enable transparency blending
