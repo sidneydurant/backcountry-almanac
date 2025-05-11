@@ -30,7 +30,7 @@ const RadioOption: React.FC<RadioOptionProps> = ({
                 value={value}
                 name={name}
                 disabled={disabled}
-                className="w-4 h-4"
+                className='w-4 h-4'
             />
             <label className={labelClassName}>{label}</label>
         </div>

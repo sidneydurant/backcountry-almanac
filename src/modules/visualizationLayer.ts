@@ -1,5 +1,5 @@
 import mapboxgl from 'mapbox-gl';
-import { ElevationDataProvider } from './elevationDataProvider';
+import { ElevationDataProvider } from './elevationDataSource';
 import { VisualizationType } from '../components/VisualizationProvider';
 import { ShaderManager, ShaderProgram } from './shaderManager';
 
@@ -8,12 +8,13 @@ import { ShaderManager, ShaderProgram } from './shaderManager';
 const elevationDataProvider = new ElevationDataProvider();
 elevationDataProvider.initialize('/lassen-cropped-dem-data.tif'); // TODO: add error handling
 
-interface CustomLayer {
+export interface CustomLayer {
     id: string;
     type: 'custom';
     shaderManager: ShaderManager | null;
     shaderProgram: ShaderProgram | null;
     visualizationType: VisualizationType;
+    layerOpacity: number;
     posBuffer: WebGLBuffer | null; // Stores vertex data for each triangle
     elevationBuffer: WebGLBuffer | null; // Stores elevation data for each vertex
     elevationNXBuffer: WebGLBuffer | null; // Stores elevation data for neighbor vertex in +X direction
@@ -24,14 +25,15 @@ interface CustomLayer {
     render: (gl: WebGLRenderingContext, matrix: number[]) => void;
 }
 
-export const createVisualizationLayer = (visualizationType: VisualizationType): CustomLayer => {
+export const createVisualizationLayer = (visualizationType: VisualizationType, layerOpacity: number): CustomLayer => {
     // Define a custom WebGL layer that will be added to the map for data visualization
     const visualizationLayer: CustomLayer = {
         id: 'visualization',
         type: 'custom',
         shaderManager: null,
         shaderProgram: null,
-        visualizationType,
+        visualizationType: visualizationType,
+        layerOpacity: layerOpacity,
         gridSpacing: 0,
         vertexCount: 0,
         posBuffer: null,
@@ -55,7 +57,7 @@ export const createVisualizationLayer = (visualizationType: VisualizationType): 
             console.log('Initializing visualization layer:', this.visualizationType);
 
             // TODO: make the bounding box dynamic based on viewport
-            const boundingBox = [{ lng: -121.64, lat: 40.40}, { lng: -121.42, lat: 40.54}];
+            const boundingBox = [{ lng: -121.62, lat: 40.41}, { lng: -121.42, lat: 40.53}];
 
             // TODO: make the cell size dynamic based on viewport
             const cellSizeMercator = 0.00000175/8;
@@ -184,6 +186,11 @@ export const createVisualizationLayer = (visualizationType: VisualizationType): 
             // Set grid spacing uniform if available
             if (uniforms['u_grid_spacing']) {
                 gl.uniform1f(uniforms['u_grid_spacing'], this.gridSpacing);
+            }
+
+            // Set opacity uniform if available
+            if (uniforms['u_opacity']) {
+                gl.uniform1f(uniforms['u_opacity'], this.layerOpacity);
             }
             
             // Bind position buffer and set up position attribute

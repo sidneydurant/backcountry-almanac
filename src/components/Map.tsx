@@ -2,7 +2,7 @@
 import { useEffect, useRef, useContext } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { createVisualizationLayer } from '../modules/visualizationLayer';
+import { createVisualizationLayer, CustomLayer } from '../modules/visualizationLayer';
 import { VisualizationContext } from './VisualizationProvider';
 
 // Set Mapbox API token
@@ -19,10 +19,10 @@ const Map = () => {
     const mapRef = useRef<mapboxgl.Map | null>(null);
 
     // Reference to track the currently active layer
-    const activeLayerRef = useRef<string | null>(null);
+    const activeLayerRef = useRef<CustomLayer | null>(null);
 
     // Get the active visualization from context
-    const { activeVisualization } = useContext(VisualizationContext);
+    const { activeVisualization, layerOpacity } = useContext(VisualizationContext);
 
     useEffect(() => {
         if (!mapContainerRef.current) return; // Add early return if container is not available
@@ -57,20 +57,31 @@ const Map = () => {
         }
     }, [activeVisualization]); // Run anytime activeVisualization changes
 
+
     // Function to update the visualization layer
     const updateVisualizationLayer = (map: mapboxgl.Map) => {
         // Remove the existing layer if it exists
-        if (activeLayerRef.current && map.getLayer(activeLayerRef.current)) {
-            map.removeLayer(activeLayerRef.current);
+        if (activeLayerRef.current && map.getLayer(activeLayerRef.current.id)) {
+            map.removeLayer(activeLayerRef.current.id);
         }
         
         // Create and add the new layer
-        const newLayer = createVisualizationLayer(activeVisualization);
+        const newLayer = createVisualizationLayer(activeVisualization, layerOpacity);
         map.addLayer(newLayer, 'building');
         
         // Update the active layer reference
-        activeLayerRef.current = newLayer.id;
+        activeLayerRef.current = newLayer;
     };
+
+    // trigger a single repaint when opacity changes
+    useEffect(() => {
+        if (activeLayerRef.current) {
+            activeLayerRef.current.layerOpacity = layerOpacity;
+        }
+        if (mapRef.current) {
+            mapRef.current.triggerRepaint();
+        }
+    }, [layerOpacity]);
 
     // Render a div container for the map
     return (

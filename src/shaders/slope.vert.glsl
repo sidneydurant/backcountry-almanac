@@ -8,6 +8,7 @@ varying vec4 v_color;
 
 uniform mat4 u_matrix;
 uniform float u_grid_spacing; // Distance between vertices in the grid
+uniform float u_opacity;
 
 void main() {
     // Calculate the slope using finite differences
@@ -52,7 +53,7 @@ void main() {
     }
 
     // Pass the computed color to the fragment shader
-    v_color = vec4(color, 0.2);
+    v_color = vec4(color, u_opacity);
     
     // Set the position
     gl_Position = u_matrix * a_position;

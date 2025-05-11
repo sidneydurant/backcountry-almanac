@@ -131,6 +131,7 @@ export class ShaderManager {
         const uniforms: Record<string, WebGLUniformLocation> = {};
         const gridSpacingLocation = gl.getUniformLocation(program, 'u_grid_spacing');
         const matrixLocation = gl.getUniformLocation(program, 'u_matrix');
+        const layerOpacity = gl.getUniformLocation(program, 'u_opacity');
         
         if (gridSpacingLocation) {
             uniforms['u_grid_spacing'] = gridSpacingLocation;
@@ -138,6 +139,10 @@ export class ShaderManager {
         
         if (matrixLocation) {
             uniforms['u_matrix'] = matrixLocation;
+        }
+
+        if (layerOpacity) {
+            uniforms['u_opacity'] = layerOpacity;
         }
         
         return {

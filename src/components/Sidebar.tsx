@@ -2,6 +2,7 @@
 import { VisualizationContext, VisualizationType } from './VisualizationProvider';
 import { useContext } from 'react';
 import RadioOption from './RadioOption';
+import LayerSettings from './LayerSettings';
 
 const visualizationOptions = [
     { value: 'elevation', label: 'Elevation' },
@@ -11,11 +12,18 @@ const visualizationOptions = [
 ];
 
 const Sidebar = () => {
-    const { activeVisualization, setActiveVisualization } = useContext(VisualizationContext);
+    const { activeVisualization, setActiveVisualization, layerOpacity, setLayerOpacity } = useContext(VisualizationContext);
 
-    const onRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const onLayerSelectionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setActiveVisualization(event.target.value as VisualizationType);
     };
+
+    const onLayerSettingsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        // TODO: modify visualizationProvider so that there is a 'VisualizationSettings' object that contains
+        // the visualization type as well as the visualizationsettings (or maybe just opacity for now?)
+        // TODO setActiveVisualization(event.target.value as );
+        setLayerOpacity(Number(event.target.value));
+    }
 
     return (
         <div id="sidebar" className="fixed left-0 top-0 bg-white z-50 m-4 rounded-lg shadow-xl ring">
@@ -42,14 +50,20 @@ const Sidebar = () => {
                 <h2 className="text-md font-semibold text-slate-800 mt-4 mb-2">Overlay</h2>
                 <div className="space-y-2 pl-4">
                     {visualizationOptions.map((option) => (
-                        <RadioOption
-                            key={option.value}
-                            value={option.value}
-                            name="layer"
-                            label={option.label}
-                            checked={activeVisualization === option.value}
-                            onChange={onRadioChange}
-                        />
+                        <div key={option.value}>
+                            <RadioOption
+                                value={option.value}
+                                name="layer"
+                                label={option.label}
+                                checked={activeVisualization === option.value}
+                                onChange={onLayerSelectionChange}
+                            />
+                            {activeVisualization === option.value ? <LayerSettings 
+                                value={layerOpacity}
+                                name={"Opacity"}
+                                label={"Opacity"}
+                                onChange={onLayerSettingsChange}/> : null}
+                        </div>
                     ))}
                 </div>
             </div>

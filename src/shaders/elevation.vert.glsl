@@ -8,6 +8,7 @@ varying vec4 v_color;
 // NOTE: 'Uniforms' are effectively global variables that do not change across invocations
 // of the shader for a single draw call.
 uniform mat4 u_matrix;
+uniform float u_opacity;
 
 void main() {
     // Normalize elevation to a value between 0 and 1
@@ -37,7 +38,7 @@ void main() {
     }
 
     // Pass the computed color to the fragment shader
-    v_color = vec4(color, 0.2);
+    v_color = vec4(color, u_opacity);
 
     // Set the position
     gl_Position = u_matrix * a_position;
