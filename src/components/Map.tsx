@@ -2,7 +2,7 @@
 import { useEffect, useRef, useContext } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { createVisualizationLayer, CustomLayer } from '../modules/visualizationLayer';
+import { createOverlay, CustomLayer } from '../modules/visualizationLayer';
 import { OverlayContext } from './OverlaySettingsProvider';
 
 // Set Mapbox API token
@@ -65,7 +65,7 @@ const Map = () => {
     }
 
     // Create and add the new layer
-    const newLayer = createVisualizationLayer(activeOverlay, overlayOpacity);
+    const newLayer = createOverlay(activeOverlay, overlayOpacity);
     map.addLayer(newLayer, 'building');
 
     // Update the active layer reference
@@ -75,7 +75,7 @@ const Map = () => {
   // trigger a single repaint when opacity changes
   useEffect(() => {
     if (activeLayerRef.current) {
-      activeLayerRef.current.layerOpacity = overlayOpacity;
+      activeLayerRef.current.overlayOpacity = overlayOpacity;
     }
     if (mapRef.current) {
       mapRef.current.triggerRepaint();

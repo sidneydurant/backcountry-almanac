@@ -1,3 +1,5 @@
+// TODO: add resource cleanup
+
 import { OverlayType } from '../components/OverlaySettingsProvider';
 
 // Import all shader sources
@@ -6,23 +8,36 @@ import slopeVertexShaderSource from '../shaders/slope.vert.glsl?raw';
 import aspectVertexShaderSource from '../shaders/aspect.vert.glsl?raw';
 import defaultFragmentShaderSource from '../shaders/default.frag.glsl?raw';
 
+/**
+ * Represents a compiled and linked WebGL shader program with attribute and uniform locations.
+ */
 export interface ShaderProgram {
   program: WebGLProgram;
   attributes: Record<string, number>;
   uniforms: Record<string, WebGLUniformLocation>;
 }
 
-// TODO: add resource cleanup
-
+/**
+ * Manages the compilation, linking, and retrieval of WebGL shader programs for different overlay types.
+ */
 export class ShaderManager {
   private gl: WebGLRenderingContext;
   private programs: Map<OverlayType, ShaderProgram | null> = new Map();
 
+  // TODO: ask about this
+  /**
+   * Creates a new ShaderManager for the given WebGL context.
+   * @param gl - The WebGL rendering context
+   */
   constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
   }
 
-  // Get or create shader program for a specific overlay type
+  /**
+   * Gets or creates a shader program for the specified overlay type.
+   * @param overlayType - The overlay visualization type
+   * @returns The compiled ShaderProgram or null if not needed
+   */
   getShaderProgram(overlayType: OverlayType): ShaderProgram | null {
     // Return existing program if already created
     if (this.programs.has(overlayType)) {
@@ -57,7 +72,12 @@ export class ShaderManager {
     return program;
   }
 
-  // Create a shader program from vertex and fragment shader sources
+  /**
+   * Compiles vertex and fragment shaders, links them into a WebGL program, and retrieves attribute/uniform locations.
+   * @param vertexShaderSource - GLSL source code for the vertex shader
+   * @param fragmentShaderSource - GLSL source code for the fragment shader
+   * @returns The compiled ShaderProgram or null if compilation/linking fails
+   */
   private createShaderProgram(vertexShaderSource: string, fragmentShaderSource: string): ShaderProgram | null {
     const gl = this.gl;
 

@@ -2,6 +2,10 @@ import { fromArrayBuffer } from 'geotiff';
 
 // TODO: add unit tests
 
+/**
+ * Provides methods to load and interpolate elevation data from a GeoTIFF DEM source.
+ * Handles transformation from GPS coordinates to pixel coordinates and bilinear interpolation of elevation data.
+ */
 export class ElevationDataProvider {
   private tiff: any = null;
   private image: any = null;
@@ -9,6 +13,12 @@ export class ElevationDataProvider {
   private isReady: boolean = false;
   private gpsToPixel: number[] = [];
 
+  /**
+   * Loads a GeoTIFF DEM file from the provided source URL and initializes the provider.
+   * Sets up the transformation matrix for GPS to pixel conversion.
+   * @param source - URL to the GeoTIFF DEM file
+   * @throws Error if loading or parsing fails
+   */
   async initialize(source: string): Promise<void> {
     try {
       const response = await fetch(source);
@@ -29,10 +39,10 @@ export class ElevationDataProvider {
   }
 
   /**
-   * Bilinearly interpolate elevation from DEM data for given GPS coordinates.
-   * @param lng Longitude
-   * @param lat Latitude
-   * @returns Interpolated elevation value
+   * Bilinearly interpolates elevation from DEM data for given GPS coordinates.
+   * @param lng - Longitude in WGS-84
+   * @param lat - Latitude in WGS-84
+   * @returns Interpolated elevation value (meters)
    */
   getElevation(lng: number, lat: number): number {
     if (!this.isReady) {
@@ -77,6 +87,10 @@ export class ElevationDataProvider {
     return lerp(r1, r2, ty);
   }
 
+  /**
+   * Computes the transformation matrix to convert GPS coordinates to pixel coordinates
+   * based on the GeoTIFF file metadata.
+   */
   private setupTransformationMatrix(): void {
     const { ModelPixelScale: s, ModelTiepoint: t } = this.image.fileDirectory;
     let [sx, sy, _sz] = s;

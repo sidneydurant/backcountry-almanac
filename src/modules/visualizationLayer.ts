@@ -1,20 +1,26 @@
+// TODO: separate out data parsing and WebGL rendering utilities
+// TODO: add error handling in case shader creation fails
+// TODO: finish consolidating terminology from [visualizationlayer, overlay, layer] > [overlay]
+
 import mapboxgl from 'mapbox-gl';
 import { ElevationDataProvider } from './elevationDataSource';
 import { OverlayType } from '../components/OverlaySettingsProvider';
 import { ShaderManager, ShaderProgram } from './shaderManager';
 
-// TODO: separate out data parsing and WebGL rendering utilities
-
 const elevationDataProvider = new ElevationDataProvider();
-elevationDataProvider.initialize('/lassen-cropped-dem-data.tif'); // TODO: add error handling
+elevationDataProvider.initialize('/lassen-cropped-dem-data.tif');
 
+/**
+ * Represents a custom WebGL layer for visualizing elevation or overlay data on the map.
+ * Contains buffer objects, shader references, and rendering logic.
+ */
 export interface CustomLayer {
   id: string;
   type: 'custom';
   shaderManager: ShaderManager | null;
   shaderProgram: ShaderProgram | null;
   overlayType: OverlayType;
-  layerOpacity: number;
+  overlayOpacity: number;
   posBuffer: WebGLBuffer | null; // Stores vertex data for each triangle
   elevationBuffer: WebGLBuffer | null; // Stores elevation data for each vertex
   elevationNXBuffer: WebGLBuffer | null; // Stores elevation data for neighbor vertex in +X direction
@@ -25,15 +31,22 @@ export interface CustomLayer {
   render: (gl: WebGLRenderingContext, matrix: number[]) => void;
 }
 
-export const createVisualizationLayer = (overlayType: OverlayType, layerOpacity: number): CustomLayer => {
-  // Define a custom WebGL layer that will be added to the map for data visualization
-  const visualizationLayer: CustomLayer = {
-    id: 'visualization',
+/**
+ * Creates a custom overlay with the specified type and opacity.
+ * Handles buffer setup and rendering logic for elevation and overlay data.
+ * @param overlayType - The overlay type ('elevation', 'slope', etc.)
+ * @param overlayOpacity - The opacity of the overlay
+ * @returns The configured CustomLayer object
+ */
+export const createOverlay = (overlayType: OverlayType, overlayOpacity: number): CustomLayer => {
+  // Define a custom overlay that will be added to the map for data visualization
+  const overlay: CustomLayer = {
+    id: 'overlay',
     type: 'custom',
     shaderManager: null,
     shaderProgram: null,
     overlayType: overlayType,
-    layerOpacity: layerOpacity,
+    overlayOpacity: overlayOpacity,
     gridSpacing: 0,
     vertexCount: 0,
     posBuffer: null,
@@ -41,12 +54,16 @@ export const createVisualizationLayer = (overlayType: OverlayType, layerOpacity:
     elevationNXBuffer: null,
     elevationNZBuffer: null,
 
-    // onAdd is called when the layer is added to the map
+    /**
+     * Called when the layer is added to the map. Initializes shaders and data buffers.
+     * @param _map - The Mapbox GL map instance
+     * @param gl - The WebGL rendering context
+     */
     onAdd: function (_map: mapboxgl.Map, gl: WebGLRenderingContext) {
       // Initialize the shader manager
       this.shaderManager = new ShaderManager(gl);
 
-      // Get shader program for the specified visualization type
+      // Get shader program for the specified overlay type
       this.shaderProgram = this.shaderManager.getShaderProgram(this.overlayType);
 
       // If no program is needed (e.g., 'none' type), exit early
@@ -54,7 +71,7 @@ export const createVisualizationLayer = (overlayType: OverlayType, layerOpacity:
         return;
       }
 
-      console.log('Initializing visualization layer:', this.overlayType);
+      console.log('Initializing overlay:', this.overlayType);
 
       // TODO: make the bounding box dynamic based on viewport
       const boundingBox = [
@@ -182,7 +199,11 @@ export const createVisualizationLayer = (overlayType: OverlayType, layerOpacity:
       this.vertexCount = vertices.length / 2;
     },
 
-    // render is called on every frame update when the map needs to be redrawn
+    /**
+     * Called on every frame update when the map needs to be redrawn. Handles drawing the visualization.
+     * @param gl - The WebGL rendering context
+     * @param matrix - The transformation matrix for rendering
+     */
     render: function (gl: WebGLRenderingContext, matrix: number[]) {
       if (!this.shaderProgram) {
         return;
@@ -205,7 +226,7 @@ export const createVisualizationLayer = (overlayType: OverlayType, layerOpacity:
 
       // Set opacity uniform if available
       if (uniforms['u_opacity']) {
-        gl.uniform1f(uniforms['u_opacity'], this.layerOpacity);
+        gl.uniform1f(uniforms['u_opacity'], this.overlayOpacity);
       }
 
       // Bind position buffer and set up position attribute
@@ -249,5 +270,5 @@ export const createVisualizationLayer = (overlayType: OverlayType, layerOpacity:
     },
   };
 
-  return visualizationLayer;
+  return overlay;
 };
