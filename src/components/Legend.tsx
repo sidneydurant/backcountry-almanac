@@ -1,11 +1,11 @@
 // The legend for the currently selected layer
-import { VisualizationContext } from './VisualizationProvider';
+import { OverlayContext } from './OverlaySettingsProvider';
 import { useContext } from 'react';
 
 const legendDetails = [
     { 
         value: 'elevation',
-        info: 'This layer visualizes the elevation of the terrain.',
+        info: 'This overlay visualizes the elevation of the terrain.',
         scale: (
             <div>
                 <span className="text-green-500 mr-4">1750m</span>
@@ -20,7 +20,7 @@ const legendDetails = [
     },
     {
         value: 'slope',
-        info: 'This layer visualizes the slope angle of the terrain.', 
+        info: 'This overlay visualizes the slope angle of the terrain.', 
         scale: (
             <div>
                 <span className="text-green-500 mr-4">&lt;20°</span>
@@ -33,7 +33,7 @@ const legendDetails = [
     },
     {
         value: 'aspect',
-        info: 'This layer visualizes the aspect of the terrain.',
+        info: 'This overlay visualizes the aspect of the terrain.',
         scale: (<div>
             <span className="text-cyan-500 mr-4">North</span>
             <span className="text-blue-500 mr-4">Northeast</span>
@@ -49,9 +49,9 @@ const legendDetails = [
 
 const Legend = () => {
 
-    const { activeVisualization } = useContext(VisualizationContext);
+    const { activeOverlay } = useContext(OverlayContext);
 
-    const activeLegend = legendDetails.find(legend => legend.value === activeVisualization)
+    const activeLegend = legendDetails.find(legend => legend.value === activeOverlay)
 
     return (
         <div id="legend" className="fixed right-0 top-0 bg-white z-50 m-4 rounded-lg shadow-xl ring">

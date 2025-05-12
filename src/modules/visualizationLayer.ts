@@ -1,6 +1,6 @@
 import mapboxgl from 'mapbox-gl';
 import { ElevationDataProvider } from './elevationDataSource';
-import { VisualizationType } from '../components/VisualizationProvider';
+import { OverlayType } from '../components/OverlaySettingsProvider';
 import { ShaderManager, ShaderProgram } from './shaderManager';
 
 // TODO: separate out data parsing and WebGL rendering utilities
@@ -13,7 +13,7 @@ export interface CustomLayer {
     type: 'custom';
     shaderManager: ShaderManager | null;
     shaderProgram: ShaderProgram | null;
-    visualizationType: VisualizationType;
+    overlayType: OverlayType;
     layerOpacity: number;
     posBuffer: WebGLBuffer | null; // Stores vertex data for each triangle
     elevationBuffer: WebGLBuffer | null; // Stores elevation data for each vertex
@@ -25,14 +25,14 @@ export interface CustomLayer {
     render: (gl: WebGLRenderingContext, matrix: number[]) => void;
 }
 
-export const createVisualizationLayer = (visualizationType: VisualizationType, layerOpacity: number): CustomLayer => {
+export const createVisualizationLayer = (overlayType: OverlayType, layerOpacity: number): CustomLayer => {
     // Define a custom WebGL layer that will be added to the map for data visualization
     const visualizationLayer: CustomLayer = {
         id: 'visualization',
         type: 'custom',
         shaderManager: null,
         shaderProgram: null,
-        visualizationType: visualizationType,
+        overlayType: overlayType,
         layerOpacity: layerOpacity,
         gridSpacing: 0,
         vertexCount: 0,
@@ -47,14 +47,14 @@ export const createVisualizationLayer = (visualizationType: VisualizationType, l
             this.shaderManager = new ShaderManager(gl);
             
             // Get shader program for the specified visualization type
-            this.shaderProgram = this.shaderManager.getShaderProgram(this.visualizationType);
+            this.shaderProgram = this.shaderManager.getShaderProgram(this.overlayType);
             
             // If no program is needed (e.g., 'none' type), exit early
             if (!this.shaderProgram) {
                 return;
             }
             
-            console.log('Initializing visualization layer:', this.visualizationType);
+            console.log('Initializing visualization layer:', this.overlayType);
 
             // TODO: make the bounding box dynamic based on viewport
             const boundingBox = [{ lng: -121.62, lat: 40.41}, { lng: -121.42, lat: 40.53}];
@@ -92,7 +92,7 @@ export const createVisualizationLayer = (visualizationType: VisualizationType, l
             }
 
             // TODO: separte vertex and elevation and neighbor generation into helper functions that are only called if the corresponding
-            // attributes are required for the visualization type
+            // attributes are required for the overlay type
             // Generate vertex positions and elevation data for each grid cell
             for (let i = 0; i < gridWidth; i++) {
                 for (let j = 0; j < gridHeight; j++) {
