@@ -10,7 +10,7 @@ const overlayOptions = [
     { value: 'none', label: 'None' }
 ];
 
-const OverlaySettings: React.FC<void> = () => {
+const OverlaySettings: React.FC = () => {
 
     const { activeOverlay, setActiveOverlay, overlayOpacity, setOverlayOpacity } = useContext(OverlayContext);
 

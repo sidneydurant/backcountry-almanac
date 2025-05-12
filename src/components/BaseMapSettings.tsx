@@ -1,7 +1,7 @@
 
 import RadioOption from './RadioOption';
 
-const BaseMapSettings: React.FC<void> = () => {
+const BaseMapSettings: React.FC = () => {
    return (
     <>
             <h2 className="text-md font-semibold text-slate-800 mt-2 mb-2">Base Map</h2>
