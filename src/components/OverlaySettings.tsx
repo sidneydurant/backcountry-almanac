@@ -14,11 +14,11 @@ const OverlaySettings: React.FC = () => {
 
     const { activeOverlay, setActiveOverlay, overlayOpacity, setOverlayOpacity } = useContext(OverlayContext);
 
-    const onLayerSelectionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const onOverlaySelectionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setActiveOverlay(event.target.value as OverlayType);
     };
 
-    const onLayerSettingsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const onOverlayOpacityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setOverlayOpacity(Number(event.target.value));
     }
 
@@ -34,7 +34,7 @@ const OverlaySettings: React.FC = () => {
                     max="1"
                     step="0.01"
                     value={overlayOpacity}
-                    onChange={onLayerSettingsChange} />
+                    onChange={onOverlayOpacityChange} />
             </div>
             <div className="space-y-2 pl-4">
                 {overlayOptions.map(option => (
@@ -44,7 +44,7 @@ const OverlaySettings: React.FC = () => {
                             name="layer"
                             label={option.label}
                             checked={activeOverlay === option.value}
-                            onChange={onLayerSelectionChange}
+                            onChange={onOverlaySelectionChange}
                         />
                     </div>
                 ))}
