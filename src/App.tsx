@@ -1,18 +1,18 @@
 import Map from './components/Map'
 import Sidebar from './components/Sidebar'
 import './App.css'
-import { VisualizationProvider } from './components/VisualizationProvider'
+import { OverlayProvider } from './components/OverlaySettingsProvider'
 import Legend from './components/Legend'
 
 function App() {
 
     return (
         <main className="h-full w-full">
-            <VisualizationProvider>
+            <OverlayProvider>
                 <Sidebar/>
                 <Map/>
                 <Legend/>
-            </VisualizationProvider>
+            </OverlayProvider>
         </main>
     );
 }

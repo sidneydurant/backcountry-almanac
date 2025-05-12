@@ -1,4 +1,4 @@
-import { VisualizationType } from '../components/VisualizationProvider';
+import { OverlayType } from '../components/OverlaySettingsProvider';
 
 // Import all shader sources
 import elevationVertexShaderSource from '../shaders/elevation.vert.glsl?raw';
@@ -16,28 +16,28 @@ export interface ShaderProgram {
 
 export class ShaderManager {
     private gl: WebGLRenderingContext;
-    private programs: Map<VisualizationType, ShaderProgram | null> = new Map();
+    private programs: Map<OverlayType, ShaderProgram | null> = new Map();
 
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
     }
 
-    // Get or create shader program for a specific visualization type
-    getShaderProgram(visualizationType: VisualizationType): ShaderProgram | null {
+    // Get or create shader program for a specific overlay type
+    getShaderProgram(overlayType: OverlayType): ShaderProgram | null {
         // Return existing program if already created
-        if (this.programs.has(visualizationType)) {
-            return this.programs.get(visualizationType) || null;
+        if (this.programs.has(overlayType)) {
+            return this.programs.get(overlayType) || null;
         }
 
-        // Skip if visualization type is 'none'
-        if (visualizationType === 'none') {
-            this.programs.set(visualizationType, null);
+        // Skip if overlay type is 'none'
+        if (overlayType === 'none') {
+            this.programs.set(overlayType, null);
             return null;
         }
 
         // Select the appropriate vertex shader source
         let vertexShaderSource: string;
-        switch (visualizationType) {
+        switch (overlayType) {
             case 'elevation':
                 vertexShaderSource = elevationVertexShaderSource;
                 break;
@@ -53,7 +53,7 @@ export class ShaderManager {
 
         // Create the program
         const program = this.createShaderProgram(vertexShaderSource, defaultFragmentShaderSource);
-        this.programs.set(visualizationType, program);
+        this.programs.set(overlayType, program);
         return program;
     }
 

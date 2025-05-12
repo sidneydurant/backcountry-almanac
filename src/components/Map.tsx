@@ -3,7 +3,7 @@ import { useEffect, useRef, useContext } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { createVisualizationLayer, CustomLayer } from '../modules/visualizationLayer';
-import { VisualizationContext } from './VisualizationProvider';
+import { OverlayContext } from './OverlaySettingsProvider';
 
 // Set Mapbox API token
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -21,8 +21,8 @@ const Map = () => {
     // Reference to track the currently active layer
     const activeLayerRef = useRef<CustomLayer | null>(null);
 
-    // Get the active visualization from context
-    const { activeVisualization, layerOpacity } = useContext(VisualizationContext);
+    // Get the active overlay from context
+    const { activeOverlay, overlayOpacity } = useContext(OverlayContext);
 
     useEffect(() => {
         if (!mapContainerRef.current) return; // Add early return if container is not available
@@ -55,7 +55,7 @@ const Map = () => {
         } else {
             updateVisualizationLayer(map);
         }
-    }, [activeVisualization]); // Run anytime activeVisualization changes
+    }, [activeOverlay]); // Run anytime activeOverlay changes
 
 
     // Function to update the visualization layer
@@ -66,7 +66,7 @@ const Map = () => {
         }
         
         // Create and add the new layer
-        const newLayer = createVisualizationLayer(activeVisualization, layerOpacity);
+        const newLayer = createVisualizationLayer(activeOverlay, overlayOpacity);
         map.addLayer(newLayer, 'building');
         
         // Update the active layer reference
@@ -76,12 +76,12 @@ const Map = () => {
     // trigger a single repaint when opacity changes
     useEffect(() => {
         if (activeLayerRef.current) {
-            activeLayerRef.current.layerOpacity = layerOpacity;
+            activeLayerRef.current.layerOpacity = overlayOpacity;
         }
         if (mapRef.current) {
             mapRef.current.triggerRepaint();
         }
-    }, [layerOpacity]);
+    }, [overlayOpacity]);
 
     // Render a div container for the map
     return (
