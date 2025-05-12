@@ -12,81 +12,78 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 const LASSEN_CENTER: [number, number] = [-121.53, 40.48];
 
 const Map = () => {
-    // React refs to store references to the map container DOM element and the mapbox instance
-    const mapContainerRef = useRef<HTMLDivElement | null>(null);
-    
-    // Reference to store the mapbox instance
-    const mapRef = useRef<mapboxgl.Map | null>(null);
+  // React refs to store references to the map container DOM element and the mapbox instance
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
 
-    // Reference to track the currently active layer
-    const activeLayerRef = useRef<CustomLayer | null>(null);
+  // Reference to store the mapbox instance
+  const mapRef = useRef<mapboxgl.Map | null>(null);
 
-    // Get the active overlay from context
-    const { activeOverlay, overlayOpacity } = useContext(OverlayContext);
+  // Reference to track the currently active layer
+  const activeLayerRef = useRef<CustomLayer | null>(null);
 
-    useEffect(() => {
-        if (!mapContainerRef.current) return; // Add early return if container is not available
-        
-        const map = new mapboxgl.Map({
-            container: mapContainerRef.current,
-            zoom: 12.8,
-            center: LASSEN_CENTER,
-            style: 'mapbox://styles/mapbox/outdoors-v12',
-            antialias: true,
-            projection: 'mercator'
-        });
+  // Get the active overlay from context
+  const { activeOverlay, overlayOpacity } = useContext(OverlayContext);
 
-        mapRef.current = map;
-    
-        // Cleanup function to remove the map when component unmounts
-        return () => {
-            map.remove();
-        };
-    }, []);  // Run once on mount
+  useEffect(() => {
+    if (!mapContainerRef.current) return; // Add early return if container is not available
 
-    // Effect to handle visualization layer changes
-    useEffect(() => {
-        const map = mapRef.current;
-        if (!map) return;
-        
-        // Wait for map to be loaded
-        if (!map.loaded()) {
-            map.on('load', () => updateVisualizationLayer(map));
-        } else {
-            updateVisualizationLayer(map);
-        }
-    }, [activeOverlay]); // Run anytime activeOverlay changes
+    const map = new mapboxgl.Map({
+      container: mapContainerRef.current,
+      zoom: 12.8,
+      center: LASSEN_CENTER,
+      style: 'mapbox://styles/mapbox/outdoors-v12',
+      antialias: true,
+      projection: 'mercator',
+    });
 
+    mapRef.current = map;
 
-    // Function to update the visualization layer
-    const updateVisualizationLayer = (map: mapboxgl.Map) => {
-        // Remove the existing layer if it exists
-        if (activeLayerRef.current && map.getLayer(activeLayerRef.current.id)) {
-            map.removeLayer(activeLayerRef.current.id);
-        }
-        
-        // Create and add the new layer
-        const newLayer = createVisualizationLayer(activeOverlay, overlayOpacity);
-        map.addLayer(newLayer, 'building');
-        
-        // Update the active layer reference
-        activeLayerRef.current = newLayer;
+    // Cleanup function to remove the map when component unmounts
+    return () => {
+      map.remove();
     };
+  }, []); // Run once on mount
 
-    // trigger a single repaint when opacity changes
-    useEffect(() => {
-        if (activeLayerRef.current) {
-            activeLayerRef.current.layerOpacity = overlayOpacity;
-        }
-        if (mapRef.current) {
-            mapRef.current.triggerRepaint();
-        }
-    }, [overlayOpacity]);
+  // Effect to handle visualization layer changes
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
 
-    // Render a div container for the map
-    return (
-        <div className="h-full w-full" ref={mapContainerRef} id="map"></div>
-    );
+    // Wait for map to be loaded
+    if (!map.loaded()) {
+      map.on('load', () => updateVisualizationLayer(map));
+    } else {
+      updateVisualizationLayer(map);
+    }
+  }, [activeOverlay]); // Run anytime activeOverlay changes
+
+  // Function to update the visualization layer
+  const updateVisualizationLayer = (map: mapboxgl.Map) => {
+    // Remove the existing layer if it exists
+    if (activeLayerRef.current && map.getLayer(activeLayerRef.current.id)) {
+      map.removeLayer(activeLayerRef.current.id);
+    }
+
+    // Create and add the new layer
+    const newLayer = createVisualizationLayer(activeOverlay, overlayOpacity);
+    map.addLayer(newLayer, 'building');
+
+    // Update the active layer reference
+    activeLayerRef.current = newLayer;
+  };
+
+  // trigger a single repaint when opacity changes
+  useEffect(() => {
+    if (activeLayerRef.current) {
+      activeLayerRef.current.layerOpacity = overlayOpacity;
+    }
+    if (mapRef.current) {
+      mapRef.current.triggerRepaint();
+    }
+  }, [overlayOpacity]);
+
+  // Render a div container for the map
+  return <div className="h-full w-full" ref={mapContainerRef} id="map"></div>;
 };
 
 export default Map;

@@ -13,20 +13,24 @@ To get started, I am building simpler layers, such as elevation, aspect, and slo
 This project is a modern web application built using the following tools, frameworks and libraries:
 
 ### Frontend
+
 - **Vite**: Build tool and development server
 - **React 18**
 - **TypeScript 5**
 - **Tailwind CSS**
 
 ### Map Visualization
+
 - **Mapbox GL JS**: Interactive map with WebGL acceleration
 - **Custom WebGL Shaders**: GPU accelerated terrain visualization
 
 ### Data Sources + Management
+
 - **[USGS National Map](https://apps.nationalmap.gov/downloader/)**: Provides high-resolution DEM data of the United States, downloadable as a `.tif`. I haven't built anything to dynamically load DEM data from the backend. It is just a single static asset stored on disc (for now...)
 - **[geotiff.js](https://github.com/geotiffjs/geotiff.js/)**: Library used to parse and process Digital Elevation Model (DEM) data
 
 ### State Management
+
 - React Context API: For state management (no Redux... yet)
 
 **NOTE:** Before this project, I had minimal experience with Mapbox, React, Typescript or Tailwind and no experience with processing DEM data or writing WebGL shaders.
